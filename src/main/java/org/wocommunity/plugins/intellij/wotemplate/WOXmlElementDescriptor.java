@@ -140,6 +140,18 @@ final class WOXmlElementDescriptor implements XmlElementDescriptor {
             return Map.of();
         }
 
+        // 0) If a classpath resource "Resources/<SimpleName>.api" exists for this class,
+        // use its bindings (takes precedence over reflective inspection).
+        Set<String> apiBindings = WOApiBindingDefinitions.getBindingsForPsiClass(psiClass);
+        if (!apiBindings.isEmpty()) {
+            Map<String, XmlAttributeDescriptor> out = new LinkedHashMap<>();
+            for (String b : apiBindings) {
+                out.put(b, new WOXmlAttributeDescriptor(b, psiClass));
+            }
+            filterOutWOComponentBaseBindings(psiClass, out);
+            return out;
+        }
+
         // 0) If we have system binding definitions, prefer them (these classes often don't expose public Java members).
         String shortName = psiClass.getName();
         if (shortName != null && !shortName.isBlank()) {
