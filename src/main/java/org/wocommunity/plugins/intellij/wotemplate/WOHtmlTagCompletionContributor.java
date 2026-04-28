@@ -59,6 +59,7 @@ public final class WOHtmlTagCompletionContributor extends CompletionContributor 
                             woMatcher.addElement(
                                     LookupElementBuilder.create(WO_PREFIX_WITH_COLON + localName)
                                             .withTypeText("WO", true)
+                                            .withInsertHandler(WOHtmlWoTagInsertHandler.INSTANCE)
                             );
                         }
                     }
