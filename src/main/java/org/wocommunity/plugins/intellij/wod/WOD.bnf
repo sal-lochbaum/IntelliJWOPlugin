@@ -1,0 +1,59 @@
+{
+  parserClass="org.wocommunity.plugins.intellij.wod.parser.WODParser"
+  parserUtilClass="org.wocommunity.plugins.intellij.wod.parser.WODParserUtil"
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="WOD"
+  psiImplClassSuffix="Impl"
+  psiPackage="org.wocommunity.plugins.intellij.wod.psi"
+  psiImplPackage="org.wocommunity.plugins.intellij.wod.psi.impl"
+
+  elementTypeHolderClass="org.wocommunity.plugins.intellij.wod.psi.WODTypes"
+  elementTypeClass="org.wocommunity.plugins.intellij.wod.psi.WODElementType"
+  tokenTypeClass="org.wocommunity.plugins.intellij.wod.psi.WODTokenType"
+
+  tokens = [
+    SEMI=';'
+    COLON=':'
+    ASSIGN='='
+    LBRACE='{'
+    RBRACE='}'
+    DOT='.'
+    WS="regexp:\s+"
+
+    IDENTIFIER="regexp:[a-zA-Z_][a-zA-Z0-9_]*"
+    NUMBER="regexp:[0-9]+"
+    STRING="regexp:\"([^\\\"\r\n]|\\[^\r\n])*\""
+
+    // Support for both line and block comments
+    COMMENT="regexp://.*|/\*([^*]|\*+[^*/])*\*+/"
+  ]
+}
+
+wodFile ::= declaration *
+
+declaration ::= element_name COLON component_name LBRACE assignment_list RBRACE {
+    pin=1
+    recoverWhile=recover_declaration
+}
+
+private recover_declaration ::= !(IDENTIFIER | COLON | SEMI)
+
+element_name ::= IDENTIFIER
+
+component_name ::= IDENTIFIER
+
+private assignment_list ::= assignment*
+
+assignment ::= binding_name ASSIGN value SEMI {
+    pin=1
+    recoverWhile=recover_assignment
+}
+
+private recover_assignment ::= !(IDENTIFIER | RBRACE | SEMI)
+
+binding_name ::= IDENTIFIER
+
+value ::= STRING | key_path | NUMBER
+
+key_path ::= IDENTIFIER (DOT IDENTIFIER)*
