@@ -15,19 +15,29 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * The file contains class names without package, e.g. {@code WOGenericElement}.
  */
-final class WOSystemBindingDefinitions {
+public final class WOSystemBindingDefinitions {
 
     private static final String RESOURCE_PATH = "/wotemplate/WebObjectDefinitions.xml";
 
-    private static final Map<String, Set<String>> BINDINGS_BY_SHORT_CLASS_NAME = new ConcurrentHashMap<>();
+    public static class Binding {
+        public final String name;
+        public final boolean required;
+
+        public Binding(String name, boolean required) {
+            this.name = name;
+            this.required = required;
+        }
+    }
+
+    private static final Map<String, Set<Binding>> BINDINGS_BY_SHORT_CLASS_NAME = new ConcurrentHashMap<>();
     private static volatile boolean loaded;
 
     private WOSystemBindingDefinitions() {
     }
 
-    static @NotNull Set<String> getBindingsForShortClassName(@NotNull String shortClassName) {
+    public static @NotNull Set<Binding> getBindingsForShortClassName(@NotNull String shortClassName) {
         ensureLoaded();
-        Set<String> b = BINDINGS_BY_SHORT_CLASS_NAME.get(shortClassName);
+        Set<Binding> b = BINDINGS_BY_SHORT_CLASS_NAME.get(shortClassName);
         return b != null ? b : Collections.emptySet();
     }
 
@@ -74,12 +84,12 @@ final class WOSystemBindingDefinitions {
                 }
 
                 String cls = e.getAttribute("class");
-                if (cls == null || cls.isBlank()) {
+                if (cls.isBlank()) {
                     continue;
                 }
                 String shortName = cls.trim();
 
-                Set<String> bindings = new LinkedHashSet<>();
+                Set<Binding> bindings = new LinkedHashSet<>();
                 var bindingNodes = e.getElementsByTagName("binding");
                 for (int j = 0; j < bindingNodes.getLength(); j++) {
                     var bn = bindingNodes.item(j);
@@ -87,8 +97,9 @@ final class WOSystemBindingDefinitions {
                         continue;
                     }
                     String name = be.getAttribute("name");
-                    if (name != null && !name.isBlank()) {
-                        bindings.add(name.trim());
+                    if (!name.isBlank()) {
+                        boolean required = "YES".equals(be.getAttribute("required"));
+                        bindings.add(new Binding(name.trim(), required));
                     }
                 }
 
