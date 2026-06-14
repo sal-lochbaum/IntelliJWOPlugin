@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement;
 public interface WODValue extends PsiElement {
 
   @Nullable
-  WODKeyPath getKeyPath();
+  WODKeyPath getWODKeyPath();
 
   @Nullable
   PsiElement getNumber();

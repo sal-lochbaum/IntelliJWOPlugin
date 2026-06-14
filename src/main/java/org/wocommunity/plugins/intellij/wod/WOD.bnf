@@ -1,9 +1,8 @@
 {
   parserClass="org.wocommunity.plugins.intellij.wod.parser.WODParser"
-  parserUtilClass="org.wocommunity.plugins.intellij.wod.parser.WODParserUtil"
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
-  psiClassPrefix="WOD"
+  psiClassPrefix=""
   psiImplClassSuffix="Impl"
   psiPackage="org.wocommunity.plugins.intellij.wod.psi"
   psiImplPackage="org.wocommunity.plugins.intellij.wod.psi.impl"
@@ -32,28 +31,22 @@
 
 wodFile ::= declaration *
 
-declaration ::= element_name COLON component_name LBRACE assignment_list RBRACE {
+declaration ::= WODElement COLON WODComponent LBRACE assignment_list RBRACE {
     pin=1
-    recoverWhile=recover_declaration
 }
 
-private recover_declaration ::= !(IDENTIFIER | COLON | SEMI)
+WODElement ::= IDENTIFIER
 
-element_name ::= IDENTIFIER
+WODComponent ::= IDENTIFIER
 
-component_name ::= IDENTIFIER
+assignment_list ::= assignment *
 
-private assignment_list ::= assignment*
-
-assignment ::= binding_name ASSIGN value SEMI {
+assignment ::= WODBinding ASSIGN WODValue SEMI {
     pin=1
-    recoverWhile=recover_assignment
 }
 
-private recover_assignment ::= !(IDENTIFIER | RBRACE | SEMI)
+WODBinding ::= IDENTIFIER
 
-binding_name ::= IDENTIFIER
+WODValue ::= STRING | WODKeyPath | NUMBER
 
-value ::= STRING | key_path | NUMBER
-
-key_path ::= IDENTIFIER (DOT IDENTIFIER)*
+WODKeyPath ::= IDENTIFIER (DOT IDENTIFIER)*

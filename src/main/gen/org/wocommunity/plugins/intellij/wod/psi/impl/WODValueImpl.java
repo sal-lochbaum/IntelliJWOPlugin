@@ -17,19 +17,19 @@ public class WODValueImpl extends ASTWrapperPsiElement implements WODValue {
     super(node);
   }
 
-  public void accept(@NotNull WODVisitor visitor) {
-    visitor.visitValue(this);
+  public void accept(@NotNull Visitor visitor) {
+    visitor.visitWODValue(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
-    if (visitor instanceof WODVisitor) accept((WODVisitor)visitor);
+    if (visitor instanceof Visitor) accept((Visitor)visitor);
     else super.accept(visitor);
   }
 
   @Override
   @Nullable
-  public WODKeyPath getKeyPath() {
+  public WODKeyPath getWODKeyPath() {
     return findChildByClass(WODKeyPath.class);
   }
 
