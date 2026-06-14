@@ -143,11 +143,11 @@ final class WOXmlElementDescriptor implements XmlElementDescriptor {
         // 0) If we have system binding definitions, prefer them (these classes often don't expose public Java members).
         String shortName = psiClass.getName();
         if (shortName != null && !shortName.isBlank()) {
-            Set<String> defined = WOSystemBindingDefinitions.getBindingsForShortClassName(shortName);
+            Set<WOSystemBindingDefinitions.Binding> defined = WOSystemBindingDefinitions.getBindingsForShortClassName(shortName);
             if (!defined.isEmpty()) {
                 Map<String, XmlAttributeDescriptor> out = new LinkedHashMap<>();
-                for (String b : defined) {
-                    out.put(b, new WOXmlAttributeDescriptor(b, psiClass));
+                for (WOSystemBindingDefinitions.Binding b : defined) {
+                    out.put(b.name, new WOXmlAttributeDescriptor(b.name, psiClass));
                 }
                 filterOutWOComponentBaseBindings(psiClass, out);
                 return out;
