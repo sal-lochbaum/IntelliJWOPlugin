@@ -32,7 +32,37 @@ public class WODParser implements PsiParser, LightPsiParser {
   }
 
   static boolean parse_root_(IElementType t, PsiBuilder b, int l) {
-    return wodFile(b, l + 1);
+    return WODFile(b, l + 1);
+  }
+
+  /* ********************************************************** */
+  // WODBinding ASSIGN WODValue SEMI
+  public static boolean WODAssignment(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "WODAssignment")) return false;
+    if (!nextTokenIs(b, IDENTIFIER)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, WOD_ASSIGNMENT, null);
+    r = WODBinding(b, l + 1);
+    p = r; // pin = 1
+    r = r && report_error_(b, consumeToken(b, ASSIGN));
+    r = p && report_error_(b, WODValue(b, l + 1)) && r;
+    r = p && consumeToken(b, SEMI) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  /* ********************************************************** */
+  // WODAssignment *
+  public static boolean WODAssignmentList(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "WODAssignmentList")) return false;
+    Marker m = enter_section_(b, l, _NONE_, WOD_ASSIGNMENT_LIST, "<wod assignment list>");
+    while (true) {
+      int c = current_position_(b);
+      if (!WODAssignment(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "WODAssignmentList", c)) break;
+    }
+    exit_section_(b, l, m, true, false, null);
+    return true;
   }
 
   /* ********************************************************** */
@@ -60,6 +90,24 @@ public class WODParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // WODElement COLON WODComponent LBRACE WODAssignmentList RBRACE
+  public static boolean WODDeclaration(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "WODDeclaration")) return false;
+    if (!nextTokenIs(b, IDENTIFIER)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, WOD_DECLARATION, null);
+    r = WODElement(b, l + 1);
+    p = r; // pin = 1
+    r = r && report_error_(b, consumeToken(b, COLON));
+    r = p && report_error_(b, WODComponent(b, l + 1)) && r;
+    r = p && report_error_(b, consumeToken(b, LBRACE)) && r;
+    r = p && report_error_(b, WODAssignmentList(b, l + 1)) && r;
+    r = p && consumeToken(b, RBRACE) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  /* ********************************************************** */
   // IDENTIFIER
   public static boolean WODElement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "WODElement")) return false;
@@ -69,6 +117,18 @@ public class WODParser implements PsiParser, LightPsiParser {
     r = consumeToken(b, IDENTIFIER);
     exit_section_(b, m, WOD_ELEMENT, r);
     return r;
+  }
+
+  /* ********************************************************** */
+  // WODDeclaration *
+  static boolean WODFile(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "WODFile")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!WODDeclaration(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "WODFile", c)) break;
+    }
+    return true;
   }
 
   /* ********************************************************** */
@@ -116,66 +176,6 @@ public class WODParser implements PsiParser, LightPsiParser {
     if (!r) r = consumeToken(b, NUMBER);
     exit_section_(b, l, m, r, false, null);
     return r;
-  }
-
-  /* ********************************************************** */
-  // WODBinding ASSIGN WODValue SEMI
-  public static boolean assignment(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "assignment")) return false;
-    if (!nextTokenIs(b, IDENTIFIER)) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_, ASSIGNMENT, null);
-    r = WODBinding(b, l + 1);
-    p = r; // pin = 1
-    r = r && report_error_(b, consumeToken(b, ASSIGN));
-    r = p && report_error_(b, WODValue(b, l + 1)) && r;
-    r = p && consumeToken(b, SEMI) && r;
-    exit_section_(b, l, m, r, p, null);
-    return r || p;
-  }
-
-  /* ********************************************************** */
-  // assignment *
-  public static boolean assignment_list(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "assignment_list")) return false;
-    Marker m = enter_section_(b, l, _NONE_, ASSIGNMENT_LIST, "<assignment list>");
-    while (true) {
-      int c = current_position_(b);
-      if (!assignment(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "assignment_list", c)) break;
-    }
-    exit_section_(b, l, m, true, false, null);
-    return true;
-  }
-
-  /* ********************************************************** */
-  // WODElement COLON WODComponent LBRACE assignment_list RBRACE
-  public static boolean declaration(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "declaration")) return false;
-    if (!nextTokenIs(b, IDENTIFIER)) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_, DECLARATION, null);
-    r = WODElement(b, l + 1);
-    p = r; // pin = 1
-    r = r && report_error_(b, consumeToken(b, COLON));
-    r = p && report_error_(b, WODComponent(b, l + 1)) && r;
-    r = p && report_error_(b, consumeToken(b, LBRACE)) && r;
-    r = p && report_error_(b, assignment_list(b, l + 1)) && r;
-    r = p && consumeToken(b, RBRACE) && r;
-    exit_section_(b, l, m, r, p, null);
-    return r || p;
-  }
-
-  /* ********************************************************** */
-  // declaration *
-  static boolean wodFile(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "wodFile")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!declaration(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "wodFile", c)) break;
-    }
-    return true;
   }
 
 }

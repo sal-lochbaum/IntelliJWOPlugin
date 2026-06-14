@@ -8,11 +8,11 @@ import org.wocommunity.plugins.intellij.wod.psi.impl.*;
 
 public interface WODTypes {
 
-  IElementType ASSIGNMENT = new WODElementType("ASSIGNMENT");
-  IElementType ASSIGNMENT_LIST = new WODElementType("ASSIGNMENT_LIST");
-  IElementType DECLARATION = new WODElementType("DECLARATION");
+  IElementType WOD_ASSIGNMENT = new WODElementType("WOD_ASSIGNMENT");
+  IElementType WOD_ASSIGNMENT_LIST = new WODElementType("WOD_ASSIGNMENT_LIST");
   IElementType WOD_BINDING = new WODElementType("WOD_BINDING");
   IElementType WOD_COMPONENT = new WODElementType("WOD_COMPONENT");
+  IElementType WOD_DECLARATION = new WODElementType("WOD_DECLARATION");
   IElementType WOD_ELEMENT = new WODElementType("WOD_ELEMENT");
   IElementType WOD_KEY_PATH = new WODElementType("WOD_KEY_PATH");
   IElementType WOD_VALUE = new WODElementType("WOD_VALUE");
@@ -31,20 +31,20 @@ public interface WODTypes {
   class Factory {
     public static PsiElement createElement(ASTNode node) {
       IElementType type = node.getElementType();
-      if (type == ASSIGNMENT) {
-        return new AssignmentImpl(node);
+      if (type == WOD_ASSIGNMENT) {
+        return new WODAssignmentImpl(node);
       }
-      else if (type == ASSIGNMENT_LIST) {
-        return new AssignmentListImpl(node);
-      }
-      else if (type == DECLARATION) {
-        return new DeclarationImpl(node);
+      else if (type == WOD_ASSIGNMENT_LIST) {
+        return new WODAssignmentListImpl(node);
       }
       else if (type == WOD_BINDING) {
         return new WODBindingImpl(node);
       }
       else if (type == WOD_COMPONENT) {
         return new WODComponentImpl(node);
+      }
+      else if (type == WOD_DECLARATION) {
+        return new WODDeclarationImpl(node);
       }
       else if (type == WOD_ELEMENT) {
         return new WODElementImpl(node);
