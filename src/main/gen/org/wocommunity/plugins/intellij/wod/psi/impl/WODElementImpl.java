@@ -11,19 +11,19 @@ import static org.wocommunity.plugins.intellij.wod.psi.WODTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.wocommunity.plugins.intellij.wod.psi.*;
 
-public class WODComponentNameImpl extends ASTWrapperPsiElement implements WODComponentName {
+public class WODElementImpl extends ASTWrapperPsiElement implements WODElement {
 
-  public WODComponentNameImpl(@NotNull ASTNode node) {
+  public WODElementImpl(@NotNull ASTNode node) {
     super(node);
   }
 
-  public void accept(@NotNull WODVisitor visitor) {
-    visitor.visitComponentName(this);
+  public void accept(@NotNull Visitor visitor) {
+    visitor.visitWODElement(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
-    if (visitor instanceof WODVisitor) accept((WODVisitor)visitor);
+    if (visitor instanceof Visitor) accept((Visitor)visitor);
     else super.accept(visitor);
   }
 

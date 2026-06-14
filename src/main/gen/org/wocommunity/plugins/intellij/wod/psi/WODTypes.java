@@ -9,12 +9,13 @@ import org.wocommunity.plugins.intellij.wod.psi.impl.*;
 public interface WODTypes {
 
   IElementType ASSIGNMENT = new WODElementType("ASSIGNMENT");
-  IElementType BINDING_NAME = new WODElementType("BINDING_NAME");
-  IElementType COMPONENT_NAME = new WODElementType("COMPONENT_NAME");
+  IElementType ASSIGNMENT_LIST = new WODElementType("ASSIGNMENT_LIST");
   IElementType DECLARATION = new WODElementType("DECLARATION");
-  IElementType ELEMENT_NAME = new WODElementType("ELEMENT_NAME");
-  IElementType KEY_PATH = new WODElementType("KEY_PATH");
-  IElementType VALUE = new WODElementType("VALUE");
+  IElementType WOD_BINDING = new WODElementType("WOD_BINDING");
+  IElementType WOD_COMPONENT = new WODElementType("WOD_COMPONENT");
+  IElementType WOD_ELEMENT = new WODElementType("WOD_ELEMENT");
+  IElementType WOD_KEY_PATH = new WODElementType("WOD_KEY_PATH");
+  IElementType WOD_VALUE = new WODElementType("WOD_VALUE");
 
   IElementType ASSIGN = new WODTokenType("=");
   IElementType COLON = new WODTokenType(":");
@@ -31,24 +32,27 @@ public interface WODTypes {
     public static PsiElement createElement(ASTNode node) {
       IElementType type = node.getElementType();
       if (type == ASSIGNMENT) {
-        return new WODAssignmentImpl(node);
+        return new AssignmentImpl(node);
       }
-      else if (type == BINDING_NAME) {
-        return new WODBindingNameImpl(node);
-      }
-      else if (type == COMPONENT_NAME) {
-        return new WODComponentNameImpl(node);
+      else if (type == ASSIGNMENT_LIST) {
+        return new AssignmentListImpl(node);
       }
       else if (type == DECLARATION) {
-        return new WODDeclarationImpl(node);
+        return new DeclarationImpl(node);
       }
-      else if (type == ELEMENT_NAME) {
-        return new WODElementNameImpl(node);
+      else if (type == WOD_BINDING) {
+        return new WODBindingImpl(node);
       }
-      else if (type == KEY_PATH) {
+      else if (type == WOD_COMPONENT) {
+        return new WODComponentImpl(node);
+      }
+      else if (type == WOD_ELEMENT) {
+        return new WODElementImpl(node);
+      }
+      else if (type == WOD_KEY_PATH) {
         return new WODKeyPathImpl(node);
       }
-      else if (type == VALUE) {
+      else if (type == WOD_VALUE) {
         return new WODValueImpl(node);
       }
       throw new AssertionError("Unknown element type: " + type);

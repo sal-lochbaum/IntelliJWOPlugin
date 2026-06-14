@@ -5,15 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface WODValue extends PsiElement {
+public interface AssignmentList extends PsiElement {
 
-  @Nullable
-  WODKeyPath getWODKeyPath();
-
-  @Nullable
-  PsiElement getNumber();
-
-  @Nullable
-  PsiElement getString();
+  @NotNull
+  List<Assignment> getAssignmentList();
 
 }

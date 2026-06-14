@@ -17,13 +17,13 @@ public class WODKeyPathImpl extends ASTWrapperPsiElement implements WODKeyPath {
     super(node);
   }
 
-  public void accept(@NotNull WODVisitor visitor) {
-    visitor.visitKeyPath(this);
+  public void accept(@NotNull Visitor visitor) {
+    visitor.visitWODKeyPath(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
-    if (visitor instanceof WODVisitor) accept((WODVisitor)visitor);
+    if (visitor instanceof Visitor) accept((Visitor)visitor);
     else super.accept(visitor);
   }
 

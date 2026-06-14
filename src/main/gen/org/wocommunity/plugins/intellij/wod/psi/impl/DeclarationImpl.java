@@ -11,38 +11,38 @@ import static org.wocommunity.plugins.intellij.wod.psi.WODTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.wocommunity.plugins.intellij.wod.psi.*;
 
-public class WODDeclarationImpl extends ASTWrapperPsiElement implements WODDeclaration {
+public class DeclarationImpl extends ASTWrapperPsiElement implements Declaration {
 
-  public WODDeclarationImpl(@NotNull ASTNode node) {
+  public DeclarationImpl(@NotNull ASTNode node) {
     super(node);
   }
 
-  public void accept(@NotNull WODVisitor visitor) {
+  public void accept(@NotNull Visitor visitor) {
     visitor.visitDeclaration(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
-    if (visitor instanceof WODVisitor) accept((WODVisitor)visitor);
+    if (visitor instanceof Visitor) accept((Visitor)visitor);
     else super.accept(visitor);
   }
 
   @Override
+  @Nullable
+  public WODComponent getWODComponent() {
+    return findChildByClass(WODComponent.class);
+  }
+
+  @Override
   @NotNull
-  public List<WODAssignment> getAssignmentList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, WODAssignment.class);
+  public WODElement getWODElement() {
+    return findNotNullChildByClass(WODElement.class);
   }
 
   @Override
   @Nullable
-  public WODComponentName getComponentName() {
-    return findChildByClass(WODComponentName.class);
-  }
-
-  @Override
-  @NotNull
-  public WODElementName getElementName() {
-    return findNotNullChildByClass(WODElementName.class);
+  public AssignmentList getAssignmentList() {
+    return findChildByClass(AssignmentList.class);
   }
 
 }

@@ -5,9 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface WODBindingName extends PsiElement {
+public interface Assignment extends PsiElement {
 
   @NotNull
-  PsiElement getIdentifier();
+  WODBinding getWODBinding();
+
+  @Nullable
+  WODValue getWODValue();
 
 }

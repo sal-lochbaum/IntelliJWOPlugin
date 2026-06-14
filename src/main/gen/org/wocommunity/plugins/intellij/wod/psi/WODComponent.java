@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface WODElementName extends PsiElement {
+public interface WODComponent extends PsiElement {
 
   @NotNull
   PsiElement getIdentifier();

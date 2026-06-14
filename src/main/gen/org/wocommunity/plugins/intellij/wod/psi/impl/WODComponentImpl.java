@@ -11,32 +11,26 @@ import static org.wocommunity.plugins.intellij.wod.psi.WODTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.wocommunity.plugins.intellij.wod.psi.*;
 
-public class WODAssignmentImpl extends ASTWrapperPsiElement implements WODAssignment {
+public class WODComponentImpl extends ASTWrapperPsiElement implements WODComponent {
 
-  public WODAssignmentImpl(@NotNull ASTNode node) {
+  public WODComponentImpl(@NotNull ASTNode node) {
     super(node);
   }
 
-  public void accept(@NotNull WODVisitor visitor) {
-    visitor.visitAssignment(this);
+  public void accept(@NotNull Visitor visitor) {
+    visitor.visitWODComponent(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
-    if (visitor instanceof WODVisitor) accept((WODVisitor)visitor);
+    if (visitor instanceof Visitor) accept((Visitor)visitor);
     else super.accept(visitor);
   }
 
   @Override
   @NotNull
-  public WODBindingName getBindingName() {
-    return findNotNullChildByClass(WODBindingName.class);
-  }
-
-  @Override
-  @Nullable
-  public WODValue getValue() {
-    return findChildByClass(WODValue.class);
+  public PsiElement getIdentifier() {
+    return findNotNullChildByType(IDENTIFIER);
   }
 
 }
