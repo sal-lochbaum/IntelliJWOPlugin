@@ -77,6 +77,7 @@
         <fileType name="WOD File" implementationClass="org.wocommunity.plugins.intellij.wod.WODFileType" fieldName="INSTANCE" language="WOD" extensions="wod"/>
         <lang.parserDefinition language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODParserDefinition"/>
         <lang.syntaxHighlighterFactory language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODSyntaxHighlighterFactory"/>
+        <annotator language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODAnnotator"/>
     </extensions>
 
     <!--
