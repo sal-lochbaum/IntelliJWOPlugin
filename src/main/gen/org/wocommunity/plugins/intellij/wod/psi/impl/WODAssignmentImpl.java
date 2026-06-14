@@ -11,14 +11,14 @@ import static org.wocommunity.plugins.intellij.wod.psi.WODTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.wocommunity.plugins.intellij.wod.psi.*;
 
-public class AssignmentListImpl extends ASTWrapperPsiElement implements AssignmentList {
+public class WODAssignmentImpl extends ASTWrapperPsiElement implements WODAssignment {
 
-  public AssignmentListImpl(@NotNull ASTNode node) {
+  public WODAssignmentImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull Visitor visitor) {
-    visitor.visitAssignmentList(this);
+    visitor.visitWODAssignment(this);
   }
 
   @Override
@@ -29,8 +29,14 @@ public class AssignmentListImpl extends ASTWrapperPsiElement implements Assignme
 
   @Override
   @NotNull
-  public List<Assignment> getAssignmentList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, Assignment.class);
+  public WODBinding getWODBinding() {
+    return findNotNullChildByClass(WODBinding.class);
+  }
+
+  @Override
+  @Nullable
+  public WODValue getWODValue() {
+    return findChildByClass(WODValue.class);
   }
 
 }

@@ -7,11 +7,23 @@ import com.intellij.psi.PsiElement;
 
 public class Visitor extends PsiElementVisitor {
 
+  public void visitWODAssignment(@NotNull WODAssignment o) {
+    visitPsiElement(o);
+  }
+
+  public void visitWODAssignmentList(@NotNull WODAssignmentList o) {
+    visitPsiElement(o);
+  }
+
   public void visitWODBinding(@NotNull WODBinding o) {
     visitPsiElement(o);
   }
 
   public void visitWODComponent(@NotNull WODComponent o) {
+    visitPsiElement(o);
+  }
+
+  public void visitWODDeclaration(@NotNull WODDeclaration o) {
     visitPsiElement(o);
   }
 
@@ -24,18 +36,6 @@ public class Visitor extends PsiElementVisitor {
   }
 
   public void visitWODValue(@NotNull WODValue o) {
-    visitPsiElement(o);
-  }
-
-  public void visitAssignment(@NotNull Assignment o) {
-    visitPsiElement(o);
-  }
-
-  public void visitAssignmentList(@NotNull AssignmentList o) {
-    visitPsiElement(o);
-  }
-
-  public void visitDeclaration(@NotNull Declaration o) {
     visitPsiElement(o);
   }
 
