@@ -29,9 +29,9 @@
   ]
 }
 
-wodFile ::= declaration *
+WODFile ::= WODDeclaration *
 
-declaration ::= WODElement COLON WODComponent LBRACE assignment_list RBRACE {
+WODDeclaration ::= WODElement COLON WODComponent LBRACE WODAssignmentList RBRACE {
     pin=1
 }
 
@@ -39,9 +39,9 @@ WODElement ::= IDENTIFIER
 
 WODComponent ::= IDENTIFIER
 
-assignment_list ::= assignment *
+WODAssignmentList ::= WODAssignment *
 
-assignment ::= WODBinding ASSIGN WODValue SEMI {
+WODAssignment ::= WODBinding ASSIGN WODValue SEMI {
     pin=1
 }
 
