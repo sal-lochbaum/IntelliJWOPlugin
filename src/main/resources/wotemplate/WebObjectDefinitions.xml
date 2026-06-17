@@ -540,6 +540,9 @@
     <binding name="name" />
     <binding name="class" />
     <binding name="style" />
+    <binding name="min" />
+    <binding name="max" />
+    <binding name="step" />
 
     <validation message="no more than one of 'dateFormat', 'numberFormat', or 'formatter' may be bound">
       <count test="&gt;1">
