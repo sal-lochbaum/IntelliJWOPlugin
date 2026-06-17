@@ -6,13 +6,12 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorPolicy;
 import com.intellij.openapi.fileEditor.FileEditorProvider;
-import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-import org.wocommunity.plugins.intellij.WOUtil;
+import org.wocommunity.plugins.intellij.WOFileUtil;
 
 import java.io.IOException;
 
@@ -21,13 +20,13 @@ public class WOComponentEditorProvider implements FileEditorProvider, DumbAware 
     @Override
     public boolean accept(@NotNull Project project, @NotNull VirtualFile file) {
         // Accept .wo folders or files inside a .wo folder
-        return WOUtil.fileIsComponent(file) || WOUtil.fileIsPartOfComponent(file);
+        return WOFileUtil.fileIsComponent(file) || WOFileUtil.fileIsInComponent(file);
     }
 
     @Override
     public @NotNull FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile file) {
         try {
-            if (WOUtil.fileIsComponent(file)) {
+            if (WOFileUtil.fileIsComponent(file)) {
                 return new WOComponentEditor(project, file);
             }
             return new WOComponentEditor(project, file.getParent());
