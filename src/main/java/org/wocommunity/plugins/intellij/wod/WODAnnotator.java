@@ -6,19 +6,17 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
-import com.intellij.openapi.project.Project;
-import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.intellij.psi.search.PsiShortNamesCache;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.wocommunity.plugins.intellij.WOPsiUtil;
 import org.wocommunity.plugins.intellij.wod.psi.*;
 import org.wocommunity.plugins.intellij.wotemplate.WOSystemBindingDefinitions;
 
@@ -30,8 +28,6 @@ import java.util.*;
  * Annotate the different usages of IDENTIFIER tokens
  */
 final class WODAnnotator implements Annotator {
-    private static final @NonNls
-    @NotNull String WO_ELEMENT_FQN = "com.webobjects.appserver.WOElement";
 
     @Override
     public void annotate(@NotNull PsiElement psiElement, @NotNull AnnotationHolder holder) {
@@ -42,6 +38,14 @@ final class WODAnnotator implements Annotator {
             case WODKeyPath keyPath -> annotateKeyPath(keyPath, holder);
             default -> {}
         }
+    }
+
+    private WODFile getWODFile(PsiElement element) {
+        PsiElement iterElement = element;
+        while (iterElement != null && !(iterElement instanceof WODFile)) {
+            iterElement = iterElement.getParent();
+        }
+        return (WODFile) iterElement;
     }
 
     private WODDeclaration getDeclaration(PsiElement element) {
@@ -115,12 +119,7 @@ final class WODAnnotator implements Annotator {
     private List<String> getNamesFromHTMLTemplate(PsiFile wodFile) {
         List<String> elementNames = new ArrayList<>();
 
-        String componentName = wodFile.getName().replace(".wod", "");
-        if (wodFile.getParent() == null) {
-            return elementNames;
-        }
-
-        PsiFile htmlFile = wodFile.getParent().findFile(componentName + ".html");
+        PsiFile htmlFile = WOPsiUtil.getTemplate(wodFile);
         if (htmlFile == null) {
             return elementNames;
         }
@@ -146,47 +145,24 @@ final class WODAnnotator implements Annotator {
         // Validate component name against WebObjects java classes
         //       -> Valid => normal color
         //       -> Invalid => error annotation
+        // normal color
+        holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+                .range(component)
+                .textAttributes(TextAttributesKey.find("HTML_TAG_NAME"))
+                .create();
 
         String className = component.getIdentifier().getText();
         if (className.isEmpty()) {
             return;
         }
-        Project project = component.getProject();
-        JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
-        GlobalSearchScope scope = GlobalSearchScope.allScope(project);
 
-        PsiClass baseClass = facade.findClass(WO_ELEMENT_FQN, scope);
-        if (baseClass == null) {
-            holder.newAnnotation(HighlightSeverity.WARNING, WO_ELEMENT_FQN + " not found in project classpath")
-                    .range(component)
-                    .highlightType(ProblemHighlightType.WARNING)
-                    .create();
-            return;
-        }
-
-        PsiShortNamesCache cache = PsiShortNamesCache.getInstance(project);
-        PsiClass[] candidateClasses = cache.getClassesByName(className, scope);
-        for (PsiClass candidateClass : candidateClasses) {
-            if (candidateClass.isInheritor(baseClass, true)) {
-                // Nothing to complain about => normal color
-                holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
-                        .range(component)
-                        .textAttributes(TextAttributesKey.find("HTML_TAG_NAME"))
-                        .create();
-                return;
-            }
-        }
-
-        if (candidateClasses.length == 0) {
-            holder.newAnnotation(HighlightSeverity.ERROR, "The class for '" + className + "' is missing")
+        try {
+            WOPsiUtil.getPsiClass(className, component.getProject());
+        } catch (Exception e) {
+            holder.newAnnotation(HighlightSeverity.ERROR, e.getMessage())
                     .range(component)
                     .create();
-            return;
         }
-
-        holder.newAnnotation(HighlightSeverity.ERROR, "The class for '" + className + "' does not extend WOElement")
-                .range(component)
-                .create();
     }
 
     private void annotateBinding(@NotNull WODBinding binding, @NotNull AnnotationHolder holder) {
@@ -231,9 +207,24 @@ final class WODAnnotator implements Annotator {
         //       If value starts with ^ it should be specified in the API file -> warning
         // In the WOD, The key 'WOComponentName' uses a value that is deprecated.
         // In the WOD, Unable to verify key 'meldung' because the keypath 'iterUpload.fehler' in LPModernMediaUpload passes through a collection
-        holder.newAnnotation(HighlightSeverity.ERROR, "Unresolved key path")
+        holder.newAnnotation(HighlightSeverity.WARNING, "Not Yet Implemented :-O")
                 .range(keyPath)
-                .highlightType(ProblemHighlightType.LIKE_UNKNOWN_SYMBOL)
                 .create();
+
+//        try {
+//            WODFile wodFile = getWODFile(keyPath);
+//            String className = WOPsiUtil.getComponentName(wodFile);
+//            if (className == null) {
+//                // Should we show something if we can't find the class?
+//                return;
+//            }
+//            PsiClass woClass = WOPsiUtil.getPsiClass(className, keyPath.getProject());
+//            PsiField[] fields = woClass.getAllFields();
+//            woClass.getAllMethods();
+//            // TODO: Kann man vmtl. von WOXmlElementDescriptor kopieren/benutzen
+//
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
     }
 }
