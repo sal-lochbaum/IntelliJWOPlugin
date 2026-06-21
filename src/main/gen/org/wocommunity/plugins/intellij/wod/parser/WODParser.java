@@ -3,7 +3,7 @@ package org.wocommunity.plugins.intellij.wod.parser;
 
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.PsiBuilder.Marker;
-import static org.wocommunity.plugins.intellij.wod.psi.WODTypes.*;
+import static org.wocommunity.plugins.intellij.psi.wod.WODTypes.*;
 import static com.intellij.lang.parser.GeneratedParserUtilBase.*;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.lang.ASTNode;
@@ -132,19 +132,19 @@ public class WODParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // IDENTIFIER (DOT IDENTIFIER)*
+  // WODKeyPathElement (DOT WODKeyPathElement)*
   public static boolean WODKeyPath(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "WODKeyPath")) return false;
     if (!nextTokenIs(b, IDENTIFIER)) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeToken(b, IDENTIFIER);
+    r = WODKeyPathElement(b, l + 1);
     r = r && WODKeyPath_1(b, l + 1);
     exit_section_(b, m, WOD_KEY_PATH, r);
     return r;
   }
 
-  // (DOT IDENTIFIER)*
+  // (DOT WODKeyPathElement)*
   private static boolean WODKeyPath_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "WODKeyPath_1")) return false;
     while (true) {
@@ -155,13 +155,26 @@ public class WODParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // DOT IDENTIFIER
+  // DOT WODKeyPathElement
   private static boolean WODKeyPath_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "WODKeyPath_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, DOT, IDENTIFIER);
+    r = consumeToken(b, DOT);
+    r = r && WODKeyPathElement(b, l + 1);
     exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // IDENTIFIER
+  public static boolean WODKeyPathElement(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "WODKeyPathElement")) return false;
+    if (!nextTokenIs(b, IDENTIFIER)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, IDENTIFIER);
+    exit_section_(b, m, WOD_KEY_PATH_ELEMENT, r);
     return r;
   }
 

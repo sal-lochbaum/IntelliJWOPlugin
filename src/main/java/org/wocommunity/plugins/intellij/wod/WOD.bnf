@@ -4,12 +4,12 @@
 
   psiClassPrefix=""
   psiImplClassSuffix="Impl"
-  psiPackage="org.wocommunity.plugins.intellij.wod.psi"
-  psiImplPackage="org.wocommunity.plugins.intellij.wod.psi.impl"
+  psiPackage="org.wocommunity.plugins.intellij.psi.wod"
+  psiImplPackage="org.wocommunity.plugins.intellij.psi.wod.impl"
 
-  elementTypeHolderClass="org.wocommunity.plugins.intellij.wod.psi.WODTypes"
-  elementTypeClass="org.wocommunity.plugins.intellij.wod.psi.WODElementType"
-  tokenTypeClass="org.wocommunity.plugins.intellij.wod.psi.WODTokenType"
+  elementTypeHolderClass="org.wocommunity.plugins.intellij.psi.wod.WODTypes"
+  elementTypeClass="org.wocommunity.plugins.intellij.psi.wod.WODElementType"
+  tokenTypeClass="org.wocommunity.plugins.intellij.psi.wod.WODTokenType"
 
   tokens = [
     SEMI=';'
@@ -49,4 +49,6 @@ WODBinding ::= IDENTIFIER
 
 WODValue ::= STRING | WODKeyPath | NUMBER
 
-WODKeyPath ::= IDENTIFIER (DOT IDENTIFIER)*
+WODKeyPath ::= WODKeyPathElement (DOT WODKeyPathElement)*
+
+WODKeyPathElement ::= IDENTIFIER

@@ -1,5 +1,5 @@
 // This is a generated file. Not intended for manual editing.
-package org.wocommunity.plugins.intellij.wod.psi.impl;
+package org.wocommunity.plugins.intellij.psi.wod.impl;
 
 import java.util.List;
 import org.jetbrains.annotations.*;
@@ -7,18 +7,18 @@ import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
-import static org.wocommunity.plugins.intellij.wod.psi.WODTypes.*;
+import static org.wocommunity.plugins.intellij.psi.wod.WODTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
-import org.wocommunity.plugins.intellij.wod.psi.*;
+import org.wocommunity.plugins.intellij.psi.wod.*;
 
-public class WODValueImpl extends ASTWrapperPsiElement implements WODValue {
+public class WODDeclarationImpl extends ASTWrapperPsiElement implements WODDeclaration {
 
-  public WODValueImpl(@NotNull ASTNode node) {
+  public WODDeclarationImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull Visitor visitor) {
-    visitor.visitWODValue(this);
+    visitor.visitWODDeclaration(this);
   }
 
   @Override
@@ -29,20 +29,20 @@ public class WODValueImpl extends ASTWrapperPsiElement implements WODValue {
 
   @Override
   @Nullable
-  public WODKeyPath getWODKeyPath() {
-    return findChildByClass(WODKeyPath.class);
+  public WODAssignmentList getWODAssignmentList() {
+    return findChildByClass(WODAssignmentList.class);
   }
 
   @Override
   @Nullable
-  public PsiElement getNumber() {
-    return findChildByType(NUMBER);
+  public WODComponent getWODComponent() {
+    return findChildByClass(WODComponent.class);
   }
 
   @Override
-  @Nullable
-  public PsiElement getString() {
-    return findChildByType(STRING);
+  @NotNull
+  public WODElement getWODElement() {
+    return findNotNullChildByClass(WODElement.class);
   }
 
 }

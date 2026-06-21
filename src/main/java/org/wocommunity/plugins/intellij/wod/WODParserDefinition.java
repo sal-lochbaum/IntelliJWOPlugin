@@ -12,9 +12,9 @@ import com.intellij.psi.tree.IFileElementType;
 import com.intellij.psi.tree.TokenSet;
 import org.jetbrains.annotations.NotNull;
 import org.wocommunity.plugins.intellij.wod.parser.WODParser;
-import org.wocommunity.plugins.intellij.wod.psi.WODFile;
-import org.wocommunity.plugins.intellij.wod.psi.WODTokenSets;
-import org.wocommunity.plugins.intellij.wod.psi.WODTypes;
+import org.wocommunity.plugins.intellij.psi.wod.WODFile;
+import org.wocommunity.plugins.intellij.psi.wod.WODTokenSets;
+import org.wocommunity.plugins.intellij.psi.wod.WODTypes;
 
 public class WODParserDefinition implements ParserDefinition {
 public static final IFileElementType FILE = new IFileElementType(WODLanguage.INSTANCE);

@@ -1,4 +1,4 @@
-package org.wocommunity.plugins.intellij.wod.psi;
+package org.wocommunity.plugins.intellij.psi.wod;
 
 import com.intellij.psi.tree.TokenSet;
 
