@@ -1,23 +1,21 @@
 package org.wocommunity.plugins.intellij.wod;
 
-import com.intellij.codeInspection.ProblemHighlightType;
 import com.intellij.ide.highlighter.JavaHighlightingColors;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
-import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.psi.util.PsiUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.wocommunity.plugins.intellij.WOPsiUtil;
-import org.wocommunity.plugins.intellij.wod.psi.*;
+import org.wocommunity.plugins.intellij.psi.api.APIFile;
+import org.wocommunity.plugins.intellij.psi.wod.*;
 import org.wocommunity.plugins.intellij.wotemplate.WOSystemBindingDefinitions;
 
 import java.util.*;
@@ -119,7 +117,7 @@ final class WODAnnotator implements Annotator {
     private List<String> getNamesFromHTMLTemplate(PsiFile wodFile) {
         List<String> elementNames = new ArrayList<>();
 
-        PsiFile htmlFile = WOPsiUtil.getTemplate(wodFile);
+        PsiFile htmlFile = WOPsiUtil.getTemplateFile(wodFile);
         if (htmlFile == null) {
             return elementNames;
         }
@@ -157,7 +155,7 @@ final class WODAnnotator implements Annotator {
         }
 
         try {
-            WOPsiUtil.getPsiClass(className, component.getProject());
+            WOPsiUtil.getPsiClassForComponentName(className, component.getProject());
         } catch (Exception e) {
             holder.newAnnotation(HighlightSeverity.ERROR, e.getMessage())
                     .range(component)
@@ -185,17 +183,32 @@ final class WODAnnotator implements Annotator {
             return;
         }
 
-        Set<WOSystemBindingDefinitions.Binding> bindings = WOSystemBindingDefinitions.getBindingsForShortClassName(component.getIdentifier().getText());
+        String componentName = component.getIdentifier().getText();
+        String bindingName = binding.getIdentifier().getText();
+
+        // Check target components
         boolean found = false;
+        // Check System components first
+        Set<WOSystemBindingDefinitions.Binding> bindings = WOSystemBindingDefinitions.getBindingsForShortClassName(componentName);
         for (WOSystemBindingDefinitions.Binding b : bindings) {
-            if (b.name.equals(binding.getIdentifier().getText())) {
+            if (b.name.equals(bindingName)) {
                 // binding found
                 found = true;
                 break;
             }
         }
+        // Check custom components
         if (!found) {
-            // binding not found
+            PsiDirectory componentFolder = WOPsiUtil.getComponentFolder(component);
+            if (componentFolder != null) {
+                APIFile apiFile = WOPsiUtil.getApiFile(componentFolder);
+                if (apiFile != null) {
+                    found = apiFile.getBindingNames().contains(bindingName);
+                }
+            }
+        }
+        // binding not found
+        if (!found) {
             holder.newAnnotation(HighlightSeverity.ERROR, "Binding '" + binding.getIdentifier().getText() + "' is not defined for component '" + component.getIdentifier().getText() + "'")
                     .range(binding)
                     .create();

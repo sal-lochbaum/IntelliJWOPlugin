@@ -1,11 +1,11 @@
 // This is a generated file. Not intended for manual editing.
-package org.wocommunity.plugins.intellij.wod.psi;
+package org.wocommunity.plugins.intellij.psi.wod;
 
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface WODBinding extends PsiElement {
+public interface WODComponent extends PsiElement {
 
   @NotNull
   PsiElement getIdentifier();

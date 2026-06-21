@@ -1,10 +1,10 @@
 // This is a generated file. Not intended for manual editing.
-package org.wocommunity.plugins.intellij.wod.psi;
+package org.wocommunity.plugins.intellij.psi.wod;
 
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.PsiElement;
 import com.intellij.lang.ASTNode;
-import org.wocommunity.plugins.intellij.wod.psi.impl.*;
+import org.wocommunity.plugins.intellij.psi.wod.impl.*;
 
 public interface WODTypes {
 
@@ -15,6 +15,7 @@ public interface WODTypes {
   IElementType WOD_DECLARATION = new WODElementType("WOD_DECLARATION");
   IElementType WOD_ELEMENT = new WODElementType("WOD_ELEMENT");
   IElementType WOD_KEY_PATH = new WODElementType("WOD_KEY_PATH");
+  IElementType WOD_KEY_PATH_ELEMENT = new WODElementType("WOD_KEY_PATH_ELEMENT");
   IElementType WOD_VALUE = new WODElementType("WOD_VALUE");
 
   IElementType ASSIGN = new WODTokenType("=");
@@ -51,6 +52,9 @@ public interface WODTypes {
       }
       else if (type == WOD_KEY_PATH) {
         return new WODKeyPathImpl(node);
+      }
+      else if (type == WOD_KEY_PATH_ELEMENT) {
+        return new WODKeyPathElementImpl(node);
       }
       else if (type == WOD_VALUE) {
         return new WODValueImpl(node);

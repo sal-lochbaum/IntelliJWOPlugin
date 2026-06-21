@@ -1,5 +1,5 @@
 // This is a generated file. Not intended for manual editing.
-package org.wocommunity.plugins.intellij.wod.psi.impl;
+package org.wocommunity.plugins.intellij.psi.wod.impl;
 
 import java.util.List;
 import org.jetbrains.annotations.*;
@@ -7,18 +7,18 @@ import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
-import static org.wocommunity.plugins.intellij.wod.psi.WODTypes.*;
+import static org.wocommunity.plugins.intellij.psi.wod.WODTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
-import org.wocommunity.plugins.intellij.wod.psi.*;
+import org.wocommunity.plugins.intellij.psi.wod.*;
 
-public class WODAssignmentImpl extends ASTWrapperPsiElement implements WODAssignment {
+public class WODComponentImpl extends ASTWrapperPsiElement implements WODComponent {
 
-  public WODAssignmentImpl(@NotNull ASTNode node) {
+  public WODComponentImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull Visitor visitor) {
-    visitor.visitWODAssignment(this);
+    visitor.visitWODComponent(this);
   }
 
   @Override
@@ -29,14 +29,8 @@ public class WODAssignmentImpl extends ASTWrapperPsiElement implements WODAssign
 
   @Override
   @NotNull
-  public WODBinding getWODBinding() {
-    return findNotNullChildByClass(WODBinding.class);
-  }
-
-  @Override
-  @Nullable
-  public WODValue getWODValue() {
-    return findChildByClass(WODValue.class);
+  public PsiElement getIdentifier() {
+    return findNotNullChildByType(IDENTIFIER);
   }
 
 }

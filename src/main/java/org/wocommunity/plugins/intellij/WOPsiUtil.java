@@ -1,66 +1,93 @@
 package org.wocommunity.plugins.intellij;
 
+import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
+import com.intellij.psi.xml.XmlFile;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-import org.wocommunity.plugins.intellij.wod.psi.WODFile;
+import org.jetbrains.annotations.Nullable;
+import org.wocommunity.plugins.intellij.psi.api.APIFile;
+import org.wocommunity.plugins.intellij.psi.wod.*;
+
+import java.io.IOException;
 
 public class WOPsiUtil {
     private static final @NonNls @NotNull String WO_ELEMENT_FQN = "com.webobjects.appserver.WOElement";
 
-    public static boolean elementIsComponent(PsiElement element) {
-        return element instanceof PsiDirectory && WOFileUtil.COMPONENT_EXTENSION.equalsIgnoreCase(((PsiDirectory) element).getVirtualFile().getExtension());
+    public static boolean itemIsComponentFolder(PsiFileSystemItem item) {
+        return item instanceof PsiDirectory && WOFileUtil.COMPONENT_EXTENSION.equalsIgnoreCase(((PsiDirectory) item).getVirtualFile().getExtension());
     }
 
-    public static boolean elementIsInComponent(@NotNull PsiElement element) {
-        return elementIsComponentTemplate(element) || elementIsComponentDeclaration(element) || elementIsComponentApi(element) || elementIsComponentWoo(element);
+    public static boolean itemIsInComponentFolder(@NotNull PsiFileSystemItem item) {
+        return itemIsComponentTemplateFile(item) || itemIsComponentWodFile(item) || itemIsComponentApiFile(item) || itemIsComponentWooFile(item);
     }
 
-    public static boolean elementIsComponentTemplate(@NotNull PsiElement element) {
-        return element instanceof PsiFile && WOFileUtil.TEMPLATE_EXTENSION.equalsIgnoreCase(((PsiFile) element).getVirtualFile().getExtension()) && elementIsComponent(element.getParent());
+    public static boolean itemIsComponentTemplateFile(@NotNull PsiFileSystemItem item) {
+        return item instanceof PsiFile && WOFileUtil.TEMPLATE_EXTENSION.equalsIgnoreCase(((PsiFile) item).getVirtualFile().getExtension()) && itemIsComponentFolder(item.getParent());
     }
 
-    public static boolean elementIsComponentDeclaration(@NotNull PsiElement element) {
-        return element instanceof WODFile
-                && WOFileUtil.DECLARATION_EXTENSION.equalsIgnoreCase(((WODFile) element).getVirtualFile().getExtension())
-                && elementIsComponent(element.getParent());
+    public static boolean itemIsComponentWodFile(@NotNull PsiFileSystemItem item) {
+        return item instanceof WODFile
+                && WOFileUtil.DECLARATION_EXTENSION.equalsIgnoreCase(((WODFile) item).getVirtualFile().getExtension())
+                && itemIsComponentFolder(item.getParent());
     }
 
-    public static boolean elementIsComponentApi(@NotNull PsiElement element) {
-        return element instanceof PsiFile && WOFileUtil.API_EXTENSION.equalsIgnoreCase(((PsiFile) element).getVirtualFile().getExtension()) && elementIsComponent(element.getParent());
+    public static boolean itemIsComponentApiFile(@NotNull PsiFileSystemItem item) {
+        return item instanceof APIFile || (item instanceof XmlFile && WOFileUtil.API_EXTENSION.equalsIgnoreCase(((PsiFile) item).getVirtualFile().getExtension()) /* TODO: For whatever reason the api file is parallel to the .wo folder and not inside */);
     }
 
-    public static boolean elementIsComponentWoo(@NotNull PsiElement element) {
-        return element instanceof PsiFile && WOFileUtil.WOO_EXTENSION.equalsIgnoreCase(((PsiFile) element).getVirtualFile().getExtension()) && elementIsComponent(element.getParent());
+    public static boolean itemIsComponentWooFile(@NotNull PsiFileSystemItem item) {
+        return item instanceof PsiFile && WOFileUtil.WOO_EXTENSION.equalsIgnoreCase(((PsiFile) item).getVirtualFile().getExtension()) && itemIsComponentFolder(item.getParent());
     }
 
-    public static String getComponentName(@NotNull PsiElement element) {
-        PsiDirectory component = getComponent(element);
+    public static String getComponentName(@NotNull PsiFileSystemItem item) {
+        PsiDirectory component = getComponentFolder(item);
         if (component != null) {
             return component.getVirtualFile().getNameWithoutExtension();
         }
         return null;
     }
 
-    public static PsiDirectory getComponent(@NotNull PsiElement element) {
-        if (elementIsComponent(element)) {
-            return (PsiDirectory) element;
+    public static PsiDirectory getComponentFolder(@NotNull PsiElement element) {
+        if (element instanceof PsiFileSystemItem item) {
+            if (itemIsComponentFolder(item)) {
+                return (PsiDirectory) element;
+            }
+            if (itemIsInComponentFolder(item)) {
+                return ((PsiFile) element).getParent();
+            }
         }
-        if (elementIsInComponent(element)) {
-            return ((PsiFile) element).getParent();
+        else {
+            if (element instanceof WODBinding) {
+                element = element.getParent(); // -> WODAssignment
+            }
+            if (element instanceof WODAssignment) {
+                element = element.getParent(); // -> WODAssignmentList
+            }
+            if (element instanceof WODAssignmentList) {
+                element = element.getParent(); // -> WODDeclaration
+            }
+            if (element instanceof WODDeclaration wodDeclaration) {
+                element = wodDeclaration.getWODComponent();
+            }
+            if (element instanceof WODComponent wodComponent) {
+                return getComponentFolderForComponentName(wodComponent.getIdentifier().getText(), wodComponent.getProject());
+            }
         }
         return null;
     }
 
-    public static PsiFile getTemplate(@NotNull PsiElement element) {
-        if (elementIsComponentTemplate(element)) {
-            return (PsiFile) element;
+    public static PsiFile getTemplateFile(@NotNull PsiFileSystemItem item) {
+        if (itemIsComponentTemplateFile(item)) {
+            return (PsiFile) item;
         }
 
-        PsiDirectory component = getComponent(element);
+        PsiDirectory component = getComponentFolder(item);
         if (component != null) {
             String componentName = component.getVirtualFile().getNameWithoutExtension();
             return component.findFile(componentName + "." + WOFileUtil.TEMPLATE_EXTENSION);
@@ -68,12 +95,12 @@ public class WOPsiUtil {
         return null;
     }
 
-    public static WODFile getDeclaration(@NotNull PsiElement element) {
-        if (elementIsComponentDeclaration(element)) {
-            return (WODFile) element;
+    public static WODFile getWodFile(@NotNull PsiFileSystemItem item) {
+        if (itemIsComponentWodFile(item)) {
+            return (WODFile) item;
         }
 
-        PsiDirectory component = getComponent(element);
+        PsiDirectory component = getComponentFolder(item);
         if (component != null) {
             String componentName = component.getVirtualFile().getNameWithoutExtension();
             PsiFile file = component.findFile(componentName + "." + WOFileUtil.DECLARATION_EXTENSION);
@@ -84,25 +111,56 @@ public class WOPsiUtil {
         return null;
     }
 
-    public static PsiFile getApi(@NotNull PsiElement element) {
-        if (elementIsComponentApi(element)) {
-            return (PsiFile) element;
+    public static APIFile getApiFile(@NotNull PsiFileSystemItem item) {
+        if (itemIsComponentApiFile(item)) {
+            if (item instanceof XmlFile xmlFile) {
+                return new APIFile(xmlFile);
+            }
+            return (APIFile) item;
         }
 
-        PsiDirectory component = getComponent(element);
+        PsiDirectory component = getComponentFolder(item);
         if (component != null) {
             String componentName = component.getVirtualFile().getNameWithoutExtension();
-            return component.findFile(componentName + "." + WOFileUtil.API_EXTENSION);
+            assert component.getParent() != null;
+            PsiFile foundFile = component.getParent().findFile(componentName + "." + WOFileUtil.API_EXTENSION);
+            if (foundFile == null) {
+                return null;
+            }
+            if (foundFile instanceof APIFile apiFile) {
+                return apiFile;
+            }
+            if (foundFile instanceof XmlFile xmlFile) {
+                return new APIFile(xmlFile);
+            }
+            try {
+                // 1. Load the raw text of the .api file
+                String fileContent = VfsUtilCore.loadText(foundFile.getVirtualFile());
+
+                // 2. Force IntelliJ to create an in-memory XmlFile from this text
+                PsiFile factoryFile = PsiFileFactory.getInstance(component.getProject()).createFileFromText(
+                        foundFile.getName(),
+                        XmlFileType.INSTANCE, // This forces the XML language parser
+                        fileContent
+                );
+
+                // 3. This is now safely castable to XmlFile!
+                if (factoryFile instanceof XmlFile xmlFile) {
+                    return new APIFile(xmlFile);
+                }
+            } catch (IOException e) {
+                return null;
+            }
         }
         return null;
     }
 
-    public static PsiFile getWoo(@NotNull PsiElement element) {
-        if (elementIsComponentWoo(element)) {
-            return (PsiFile) element;
+    public static PsiFile getWoo(@NotNull PsiFileSystemItem item) {
+        if (itemIsComponentWooFile(item)) {
+            return (PsiFile) item;
         }
 
-        PsiDirectory component = getComponent(element);
+        PsiDirectory component = getComponentFolder(item);
         if (component != null) {
             String componentName = component.getVirtualFile().getNameWithoutExtension();
             return component.findFile(componentName + "." + WOFileUtil.WOO_EXTENSION);
@@ -110,7 +168,10 @@ public class WOPsiUtil {
         return null;
     }
 
-    public static PsiClass getPsiClass(@NotNull String className, @NotNull Project project) throws Exception {
+
+    // Find other Components
+
+    public static PsiClass getPsiClassForComponentName(@NotNull String className, @NotNull Project project) throws Exception {
         JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
         GlobalSearchScope scope = GlobalSearchScope.allScope(project);
 
@@ -125,6 +186,9 @@ public class WOPsiUtil {
         if (candidateClasses.length == 0) {
             throw new Exception("The class for '" + className + "' is missing");
         }
+        if (candidateClasses.length > 1) {
+            throw new Exception("The class for '" + className + "' is ambiguous (more than 1)");
+        }
 
         for (PsiClass candidateClass : candidateClasses) {
             if (candidateClass.isInheritor(baseClass, true)) {
@@ -135,5 +199,43 @@ public class WOPsiUtil {
 
         // We found classes but none of them extends WOElement
         throw new Exception("The class for '" + className + "' does not extend WOElement");
+    }
+
+    public static @Nullable PsiDirectory getComponentFolderForComponentName(@NotNull String componentName, @NotNull Project project) {
+        try {
+            PsiClass componentClass = getPsiClassForComponentName(componentName, project);
+
+            VirtualFile classFile = componentClass.getContainingFile().getVirtualFile();
+
+            // Find main dir
+            // FIXME:This probably needs to work with oldschool directory structures and localized? directory structures as well
+            // Unfortunately we cant just search for the file unless the component dirs are defined as content root... Maybe we can force that from the plugin?
+            VirtualFile current = classFile.getParent();
+            VirtualFile mainDir = null;
+            while (current != null) {
+                if ("main".equals(current.getName())) {
+                    mainDir = current;
+                    break;
+                }
+                current = current.getParent();
+            }
+            if (mainDir == null) {
+                return null;
+            }
+
+            // Go into components dir and check for api file
+            VirtualFile componentsDir = mainDir.findChild("components");
+            if (componentsDir == null) {
+                return null;
+            }
+            VirtualFile componentFolder = componentsDir.findChild(componentName + "." + WOFileUtil.COMPONENT_EXTENSION);
+            if (componentFolder == null || !componentFolder.isDirectory()) {
+                return null;
+            }
+            return PsiManager.getInstance(project).findDirectory(componentFolder);
+
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

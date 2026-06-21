@@ -1,5 +1,5 @@
 // This is a generated file. Not intended for manual editing.
-package org.wocommunity.plugins.intellij.wod.psi;
+package org.wocommunity.plugins.intellij.psi.wod;
 
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElementVisitor;
@@ -32,6 +32,10 @@ public class Visitor extends PsiElementVisitor {
   }
 
   public void visitWODKeyPath(@NotNull WODKeyPath o) {
+    visitPsiElement(o);
+  }
+
+  public void visitWODKeyPathElement(@NotNull WODKeyPathElement o) {
     visitPsiElement(o);
   }
 

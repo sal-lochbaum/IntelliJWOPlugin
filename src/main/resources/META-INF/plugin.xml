@@ -78,6 +78,7 @@
         <lang.parserDefinition language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODParserDefinition"/>
         <lang.syntaxHighlighterFactory language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODSyntaxHighlighterFactory"/>
         <annotator language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODAnnotator"/>
+        <completion.contributor language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODCompletionContributor"/>
     </extensions>
 
     <!--
