@@ -9,6 +9,7 @@ import org.wocommunity.plugins.intellij.psi.wod.impl.*;
 public interface WODTypes {
 
   IElementType WOD_ASSIGNMENT = new WODElementType("WOD_ASSIGNMENT");
+  IElementType WOD_ASSIGNMENT_COMMENT = new WODElementType("WOD_ASSIGNMENT_COMMENT");
   IElementType WOD_ASSIGNMENT_LIST = new WODElementType("WOD_ASSIGNMENT_LIST");
   IElementType WOD_BINDING = new WODElementType("WOD_BINDING");
   IElementType WOD_COMPONENT = new WODElementType("WOD_COMPONENT");
@@ -27,13 +28,18 @@ public interface WODTypes {
   IElementType NUMBER = new WODTokenType("NUMBER");
   IElementType RBRACE = new WODTokenType("}");
   IElementType SEMI = new WODTokenType(";");
+  IElementType SLASH = new WODTokenType("/");
   IElementType STRING = new WODTokenType("STRING");
+  IElementType VALID_KEYWORD = new WODTokenType("valid");
 
   class Factory {
     public static PsiElement createElement(ASTNode node) {
       IElementType type = node.getElementType();
       if (type == WOD_ASSIGNMENT) {
         return new WODAssignmentImpl(node);
+      }
+      else if (type == WOD_ASSIGNMENT_COMMENT) {
+        return new WODAssignmentCommentImpl(node);
       }
       else if (type == WOD_ASSIGNMENT_LIST) {
         return new WODAssignmentListImpl(node);

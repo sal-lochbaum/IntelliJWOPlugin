@@ -1,5 +1,6 @@
 {
   parserClass="org.wocommunity.plugins.intellij.wod.parser.WODParser"
+  parserUtilClass="org.wocommunity.plugins.intellij.wod.parser.WODParserUtil"
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
   psiClassPrefix=""
@@ -17,10 +18,12 @@
     ASSIGN='='
     LBRACE='{'
     RBRACE='}'
+    SLASH='/'
     DOT='.'
     WS="regexp:\s+"
+    VALID_KEYWORD='valid'
 
-    IDENTIFIER="regexp:[a-zA-Z_][a-zA-Z0-9_]*"
+    IDENTIFIER="regexp:[a-zA-Z_][a-zA-Z0-9_\-]*"
     NUMBER="regexp:[0-9]+"
     STRING="regexp:\"([^\\\"\r\n]|\\[^\r\n])*\""
 
@@ -41,9 +44,11 @@ WODComponent ::= IDENTIFIER
 
 WODAssignmentList ::= WODAssignment *
 
-WODAssignment ::= WODBinding ASSIGN WODValue SEMI {
+WODAssignment ::= WODBinding ASSIGN WODValue SEMI WODAssignmentComment? {
     pin=1
 }
+
+WODAssignmentComment ::= SLASH SLASH VALID_KEYWORD
 
 WODBinding ::= IDENTIFIER
 

@@ -4,7 +4,7 @@ package org.wocommunity.plugins.intellij.wod.parser;
 import com.intellij.lang.PsiBuilder;
 import com.intellij.lang.PsiBuilder.Marker;
 import static org.wocommunity.plugins.intellij.psi.wod.WODTypes.*;
-import static com.intellij.lang.parser.GeneratedParserUtilBase.*;
+import static org.wocommunity.plugins.intellij.wod.parser.WODParserUtil.*;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.tree.TokenSet;
@@ -36,7 +36,7 @@ public class WODParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // WODBinding ASSIGN WODValue SEMI
+  // WODBinding ASSIGN WODValue SEMI WODAssignmentComment?
   public static boolean WODAssignment(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "WODAssignment")) return false;
     if (!nextTokenIs(b, IDENTIFIER)) return false;
@@ -46,9 +46,29 @@ public class WODParser implements PsiParser, LightPsiParser {
     p = r; // pin = 1
     r = r && report_error_(b, consumeToken(b, ASSIGN));
     r = p && report_error_(b, WODValue(b, l + 1)) && r;
-    r = p && consumeToken(b, SEMI) && r;
+    r = p && report_error_(b, consumeToken(b, SEMI)) && r;
+    r = p && WODAssignment_4(b, l + 1) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;
+  }
+
+  // WODAssignmentComment?
+  private static boolean WODAssignment_4(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "WODAssignment_4")) return false;
+    WODAssignmentComment(b, l + 1);
+    return true;
+  }
+
+  /* ********************************************************** */
+  // SLASH SLASH VALID_KEYWORD
+  public static boolean WODAssignmentComment(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "WODAssignmentComment")) return false;
+    if (!nextTokenIs(b, SLASH)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, SLASH, SLASH, VALID_KEYWORD);
+    exit_section_(b, m, WOD_ASSIGNMENT_COMMENT, r);
+    return r;
   }
 
   /* ********************************************************** */

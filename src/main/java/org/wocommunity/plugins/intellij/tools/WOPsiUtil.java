@@ -1,4 +1,4 @@
-package org.wocommunity.plugins.intellij;
+package org.wocommunity.plugins.intellij.tools;
 
 import com.intellij.ide.highlighter.XmlFileType;
 import com.intellij.openapi.project.Project;
@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiShortNamesCache;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.psi.xml.XmlFile;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,16 @@ import org.wocommunity.plugins.intellij.psi.api.APIFile;
 import org.wocommunity.plugins.intellij.psi.wod.*;
 
 import java.io.IOException;
+
+// TODO: Components may also be in a Language.lproj folder inside the components folder.
+//       The .api file however is in the components folder even in that case...
+//       e.g. https://github.com/wocommunity/wonder/tree/master/Frameworks/Core/ERExtensions/Components
+
+// TODO: The .api file can also exist without a component folder if it's a WODynamicElement.
+//       In that case the .api file should not be hidden in the file tree... ;)
+
+// TODO: CONFUSION... Getting the class may refer to the class of a declaration e.g. WOHYperlink or the
+//       class of the component we are editing... argh
 
 public class WOPsiUtil {
     private static final @NonNls @NotNull String WO_ELEMENT_FQN = "com.webobjects.appserver.WOElement";
@@ -45,7 +56,7 @@ public class WOPsiUtil {
         return item instanceof PsiFile && WOFileUtil.WOO_EXTENSION.equalsIgnoreCase(((PsiFile) item).getVirtualFile().getExtension()) && itemIsComponentFolder(item.getParent());
     }
 
-    public static String getComponentName(@NotNull PsiFileSystemItem item) {
+    public static String getComponentName(@NotNull PsiElement item) {
         PsiDirectory component = getComponentFolder(item);
         if (component != null) {
             return component.getVirtualFile().getNameWithoutExtension();
@@ -63,18 +74,22 @@ public class WOPsiUtil {
             }
         }
         else {
-            if (element instanceof WODBinding) {
-                element = element.getParent(); // -> WODAssignment
+            // We need to distinguish between getting the component of the component we are editing
+            // and the component that's declared.
+
+            // get the component we are editing for values
+            WODValue value = PsiTreeUtil.getParentOfType(element, WODValue.class);
+            if (value != null) {
+                return value.getContainingFile().getOriginalFile().getContainingDirectory();
             }
-            if (element instanceof WODAssignment) {
-                element = element.getParent(); // -> WODAssignmentList
+            // or go to the declared component
+            else {
+                element = PsiTreeUtil.getParentOfType(element, WODDeclaration.class);
+                if (element instanceof WODDeclaration wodDeclaration) {
+                    element = wodDeclaration.getWODComponent();
+                }
             }
-            if (element instanceof WODAssignmentList) {
-                element = element.getParent(); // -> WODDeclaration
-            }
-            if (element instanceof WODDeclaration wodDeclaration) {
-                element = wodDeclaration.getWODComponent();
-            }
+
             if (element instanceof WODComponent wodComponent) {
                 return getComponentFolderForComponentName(wodComponent.getIdentifier().getText(), wodComponent.getProject());
             }
@@ -170,6 +185,18 @@ public class WOPsiUtil {
 
 
     // Find other Components
+
+    public static PsiClass getPsiClass(@NotNull PsiElement item) {
+        String componentName = getComponentName(item);
+        if (componentName != null) {
+            try {
+                return getPsiClassForComponentName(componentName, item.getProject());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+    }
 
     public static PsiClass getPsiClassForComponentName(@NotNull String className, @NotNull Project project) throws Exception {
         JavaPsiFacade facade = JavaPsiFacade.getInstance(project);

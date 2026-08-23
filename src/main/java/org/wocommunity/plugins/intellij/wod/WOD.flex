@@ -26,7 +26,7 @@ EOL=\R
 WHITE_SPACE=\s+
 
 WS=[ \t\n\x0B\f\r]+
-IDENTIFIER=[a-zA-Z_][a-zA-Z0-9_]*
+IDENTIFIER=[a-zA-Z_][a-zA-Z0-9_\-]*
 NUMBER=[0-9]+
 STRING=\"([^\\\"\r\n]|\\[^\r\n])*\"
 COMMENT="//".*|"/"\*([^*]|\*+[^*/])*\*+"/"
@@ -40,7 +40,9 @@ COMMENT="//".*|"/"\*([^*]|\*+[^*/])*\*+"/"
   "="                 { return ASSIGN; }
   "{"                 { return LBRACE; }
   "}"                 { return RBRACE; }
+  "/"                 { return SLASH; }
   "."                 { return DOT; }
+  "valid"             { return VALID_KEYWORD; }
 
   {WS}                { return WS; }
   {IDENTIFIER}        { return IDENTIFIER; }

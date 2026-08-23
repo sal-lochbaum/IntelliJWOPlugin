@@ -28,6 +28,12 @@ public class WODAssignmentImpl extends ASTWrapperPsiElement implements WODAssign
   }
 
   @Override
+  @Nullable
+  public WODAssignmentComment getWODAssignmentComment() {
+    return findChildByClass(WODAssignmentComment.class);
+  }
+
+  @Override
   @NotNull
   public WODBinding getWODBinding() {
     return findNotNullChildByClass(WODBinding.class);

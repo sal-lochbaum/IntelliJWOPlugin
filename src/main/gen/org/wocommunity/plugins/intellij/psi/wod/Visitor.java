@@ -11,6 +11,10 @@ public class Visitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitWODAssignmentComment(@NotNull WODAssignmentComment o) {
+    visitPsiElement(o);
+  }
+
   public void visitWODAssignmentList(@NotNull WODAssignmentList o) {
     visitPsiElement(o);
   }

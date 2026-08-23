@@ -11,7 +11,7 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
-import org.wocommunity.plugins.intellij.WOFileUtil;
+import org.wocommunity.plugins.intellij.tools.WOFileUtil;
 
 import java.io.IOException;
 
