@@ -3,12 +3,14 @@ package org.wocommunity.plugins.intellij.wod;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.patterns.PlatformPatterns;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
-import org.wocommunity.plugins.intellij.WOPsiUtil;
+import org.wocommunity.plugins.intellij.tools.KeyValueCodingUtil;
+import org.wocommunity.plugins.intellij.tools.WOPsiUtil;
 import org.wocommunity.plugins.intellij.psi.api.APIFile;
 import org.wocommunity.plugins.intellij.psi.wod.*;
 import org.wocommunity.plugins.intellij.wotemplate.WOSystemBindingDefinitions;
@@ -39,7 +41,8 @@ public class WODCompletionContributor extends CompletionContributor {
                                 case WODComponent component -> completeIdentifier4Component(component, parameters, context, result);
                                 case WODBinding binding -> completeIdentifier4Binding(binding, parameters, context, result);
                                 case WODKeyPath keyPath -> completeIdentifier4KeyPath(keyPath, parameters, context, result);
-                                default -> {}
+                                case WODKeyPathElement keyPath -> completeIdentifier4KeyPath((WODKeyPath)keyPath.getParent(), parameters, context, result);
+                                default -> {System.out.println("Unknown parent type: " + parent.getClass().getName());}
                             }
                         }
                     }
@@ -97,6 +100,11 @@ public class WODCompletionContributor extends CompletionContributor {
                                               @NotNull CompletionParameters parameters,
                                               @NotNull ProcessingContext context,
                                               @NotNull CompletionResultSet result) {
-
+        PsiClass baseClass = WOPsiUtil.getPsiClass(keyPath);
+        PsiClass lastClass = KeyValueCodingUtil.resolveWODKeyPath(baseClass, keyPath, true);
+        if (lastClass == null) {
+            return;
+        }
+        KeyValueCodingUtil.addCompletionSuggestions(result, lastClass);
     }
 }

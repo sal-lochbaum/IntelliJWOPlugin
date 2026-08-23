@@ -4,7 +4,7 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReferenceBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.wocommunity.plugins.intellij.WOPsiUtil;
+import org.wocommunity.plugins.intellij.tools.WOPsiUtil;
 import org.wocommunity.plugins.intellij.psi.wod.WODComponent;
 
 public class JavaClassReference extends PsiReferenceBase<PsiElement> {

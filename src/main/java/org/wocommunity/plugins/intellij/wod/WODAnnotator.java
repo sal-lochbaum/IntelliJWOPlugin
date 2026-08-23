@@ -5,6 +5,7 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -13,7 +14,8 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.wocommunity.plugins.intellij.WOPsiUtil;
+import org.wocommunity.plugins.intellij.tools.KeyValueCodingUtil;
+import org.wocommunity.plugins.intellij.tools.WOPsiUtil;
 import org.wocommunity.plugins.intellij.psi.api.APIFile;
 import org.wocommunity.plugins.intellij.psi.wod.*;
 import org.wocommunity.plugins.intellij.wotemplate.WOSystemBindingDefinitions;
@@ -33,7 +35,9 @@ final class WODAnnotator implements Annotator {
             case WODElement element -> annotateElement(element, holder);
             case WODComponent component -> annotateComponent(component, holder);
             case WODBinding binding -> annotateBinding(binding, holder);
-            case WODKeyPath keyPath -> annotateKeyPath(keyPath, holder);
+            case WODValue value -> annotateValue(value, holder);
+
+            //case WODKeyPath keyPath -> annotateKeyPath(keyPath, holder);
             default -> {}
         }
     }
@@ -215,29 +219,44 @@ final class WODAnnotator implements Annotator {
         }
     }
 
-    private void annotateKeyPath(@NotNull WODKeyPath keyPath, @NotNull AnnotationHolder holder) {
+    private void annotateValue(@NotNull WODValue value, @NotNull AnnotationHolder holder) {
+        PsiElement parent = value.getParent();
+        if (parent instanceof WODAssignment assignment) {
+            if (assignment.getWODAssignmentComment() != null && assignment.getWODAssignmentComment().getText().contains("valid")) {
+                return; // valid overwrites validation :)
+            }
+        }
+
+        PsiClass baseClass = WOPsiUtil.getPsiClass(value);
+        if (baseClass == null) {
+            return;
+        }
+
+        if (value.getString() != null) {
+            PsiClass resolveSegment = KeyValueCodingUtil.resolveSegment(baseClass, value.getString().getText());
+            if (resolveSegment == null) {
+                holder.createErrorAnnotation(value, "Invalid key path");
+            }
+            return;
+        }
+        if (value.getNumber() != null) {
+            // TODO Are there cases where simple numbers are invalid?
+            return;
+        }
+        if (value.getWODKeyPath() != null) {
+            annotateKeyPath(baseClass, value.getWODKeyPath(), holder);
+        }
+    }
+    private void annotateKeyPath(@NotNull PsiClass baseClass, @NotNull WODKeyPath keyPath, @NotNull AnnotationHolder holder) {
+
         // TODO: Validate against java fields or methods or getters
         //       If value starts with ^ it should be specified in the API file -> warning
         // In the WOD, The key 'WOComponentName' uses a value that is deprecated.
         // In the WOD, Unable to verify key 'meldung' because the keypath 'iterUpload.fehler' in LPModernMediaUpload passes through a collection
-        holder.newAnnotation(HighlightSeverity.WARNING, "Not Yet Implemented :-O")
-                .range(keyPath)
-                .create();
 
-//        try {
-//            WODFile wodFile = getWODFile(keyPath);
-//            String className = WOPsiUtil.getComponentName(wodFile);
-//            if (className == null) {
-//                // Should we show something if we can't find the class?
-//                return;
-//            }
-//            PsiClass woClass = WOPsiUtil.getPsiClass(className, keyPath.getProject());
-//            PsiField[] fields = woClass.getAllFields();
-//            woClass.getAllMethods();
-//            // TODO: Kann man vmtl. von WOXmlElementDescriptor kopieren/benutzen
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException(e);
-//        }
+        PsiClass resolveSegment = KeyValueCodingUtil.resolveWODKeyPath(baseClass, keyPath);
+        if (resolveSegment == null) {
+            holder.createErrorAnnotation(keyPath, "Invalid key path");
+        }
     }
 }
