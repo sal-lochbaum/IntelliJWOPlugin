@@ -79,6 +79,8 @@
         <lang.syntaxHighlighterFactory language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODSyntaxHighlighterFactory"/>
         <annotator language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODAnnotator"/>
         <completion.contributor language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODCompletionContributor"/>
+
+        <codeInsight.lineMarkerProvider language="JAVA" implementationClass="org.wocommunity.plugins.intellij.java.linemarker.JavaLineMarkerProvider"/>
     </extensions>
 
     <!--

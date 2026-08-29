@@ -78,7 +78,7 @@ public class WOPsiUtil {
             // and the component that's declared.
 
             // get the component we are editing for values
-            WODValue value = PsiTreeUtil.getParentOfType(element, WODValue.class);
+            WODValue value = element instanceof WODValue ? (WODValue) element : PsiTreeUtil.getParentOfType(element, WODValue.class);
             if (value != null) {
                 return value.getContainingFile().getOriginalFile().getContainingDirectory();
             }

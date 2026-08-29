@@ -73,6 +73,24 @@ public class WOComponentNode extends ProjectViewNode<PsiDirectory> {
 
     @Override
     public void navigate(boolean requestFocus) {
-        FileEditorManager.getInstance(myProject).openFile(getValue().getVirtualFile(), true);
+        PsiDirectory directory = getValue();
+        if (directory == null) {
+            return;
+        }
+
+        VirtualFile woDirectory = directory.getVirtualFile();
+        String componentName = woDirectory.getNameWithoutExtension();
+
+        VirtualFile fileToOpen = woDirectory.findChild(componentName + ".html");
+        if (fileToOpen == null) {
+            fileToOpen = woDirectory.findChild(componentName + ".wod");
+        }
+        if (fileToOpen == null) {
+            fileToOpen = woDirectory.findChild(componentName + ".woo");
+        }
+
+        if (fileToOpen != null && !fileToOpen.isDirectory()) {
+            FileEditorManager.getInstance(myProject).openFile(fileToOpen, requestFocus);
+        }
     }
 }

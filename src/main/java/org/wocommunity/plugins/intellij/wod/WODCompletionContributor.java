@@ -6,6 +6,7 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiMember;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
@@ -101,8 +102,8 @@ public class WODCompletionContributor extends CompletionContributor {
                                               @NotNull ProcessingContext context,
                                               @NotNull CompletionResultSet result) {
         PsiClass baseClass = WOPsiUtil.getPsiClass(keyPath);
-        PsiClass lastClass = KeyValueCodingUtil.resolveWODKeyPath(baseClass, keyPath, true);
-        if (lastClass == null) {
+        PsiMember lastMember = KeyValueCodingUtil.resolveWODKeyPath(baseClass, keyPath, true);
+        if (!(lastMember instanceof PsiClass lastClass)) {
             return;
         }
         KeyValueCodingUtil.addCompletionSuggestions(result, lastClass);
