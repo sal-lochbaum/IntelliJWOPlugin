@@ -62,7 +62,9 @@ public final class WOHtmlXmlExtension extends XmlExtension {
 
     @Override
     public boolean isCustomTagAllowed(final XmlTag tag) {
-        // Ensure inspections in HTML don't reject wo:* tags/attributes as "not allowed".
+        // Ensure inspections in HTML don't reject WebObjects tags/attributes
+        // as "not allowed". Both the modern wo:* form and the legacy
+        // <webobject> form are valid in component templates.
         PsiFile file = tag.getContainingFile();
         if (file == null) {
             return false;
@@ -78,7 +80,59 @@ public final class WOHtmlXmlExtension extends XmlExtension {
                 prefix = qn.substring(0, colon);
             }
         }
-        return "wo".equals(prefix);
+        if (isLegacyWebObjectTag(tag)) {
+            return true;
+        }
+        return "wo".equalsIgnoreCase(prefix);
+    }
+
+    @Override
+    public boolean isSelfClosingTagAllowed(@NotNull XmlTag tag) {
+        if (!isAvailable(tag.getContainingFile())) {
+            return super.isSelfClosingTagAllowed(tag);
+        }
+
+        if (isLegacyWebObjectTag(tag)) {
+            return true;
+        }
+
+        String prefix = tag.getNamespacePrefix();
+        if (prefix == null || prefix.isEmpty()) {
+            String qn = tag.getName();
+            int colon = qn.indexOf(':');
+            if (colon > 0) {
+                prefix = qn.substring(0, colon);
+            }
+        }
+        return "wo".equalsIgnoreCase(prefix) || super.isSelfClosingTagAllowed(tag);
+    }
+
+    @Override
+    public boolean isCollapsibleTag(@NotNull XmlTag tag) {
+        if (!isAvailable(tag.getContainingFile())) {
+            return super.isCollapsibleTag(tag);
+        }
+
+        if (isLegacyWebObjectTag(tag)) {
+            return true;
+        }
+
+        String prefix = tag.getNamespacePrefix();
+        if (prefix == null || prefix.isEmpty()) {
+            String qn = tag.getName();
+            int colon = qn.indexOf(':');
+            if (colon > 0) {
+                prefix = qn.substring(0, colon);
+            }
+        }
+        return "wo".equalsIgnoreCase(prefix) || super.isCollapsibleTag(tag);
+    }
+
+    private static boolean isLegacyWebObjectTag(@NotNull XmlTag tag) {
+        // getLocalName() is not consistently populated for unprefixed HTML
+        // tags; getName() is the value used by CheckEmptyTagInspection.
+        return "webobject".equalsIgnoreCase(tag.getName())
+                || "webobject".equalsIgnoreCase(tag.getLocalName());
     }
 
     private static @NotNull Set<String> collectWoInheritorNames(@NotNull XmlFile file) {
@@ -111,4 +165,3 @@ public final class WOHtmlXmlExtension extends XmlExtension {
         });
     }
 }
-

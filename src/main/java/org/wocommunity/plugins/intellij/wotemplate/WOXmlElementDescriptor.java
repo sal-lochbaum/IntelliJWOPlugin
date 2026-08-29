@@ -28,6 +28,9 @@ import java.util.Set;
 
 final class WOXmlElementDescriptor implements XmlElementDescriptor {
 
+    private static final String WEBOBJECT_TAG = "webobject";
+    private static final String WEBOBJECT_NAME_ATTRIBUTE = "name";
+
     private final @NotNull String name;
     private final @Nullable PsiElement declaration;
 
@@ -136,6 +139,14 @@ final class WOXmlElementDescriptor implements XmlElementDescriptor {
     }
 
     private @NotNull Map<String, XmlAttributeDescriptor> buildAttributeDescriptors() {
+        // The legacy <webobject name="..."> syntax is resolved from the
+        // companion .wod file, so there is no Java declaration to inspect.
+        // Still describe its structural attribute to the HTML inspections.
+        if (WEBOBJECT_TAG.equalsIgnoreCase(name)) {
+            return Map.of(WEBOBJECT_NAME_ATTRIBUTE,
+                    new WOXmlAttributeDescriptor(WEBOBJECT_NAME_ATTRIBUTE, null));
+        }
+
         if (!(declaration instanceof PsiClass psiClass)) {
             return Map.of();
         }
@@ -345,4 +356,3 @@ final class WOXmlElementDescriptor implements XmlElementDescriptor {
         return s.substring(0, 1).toLowerCase(Locale.ROOT) + s.substring(1);
     }
 }
-
