@@ -5,11 +5,10 @@ import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
+import com.intellij.psi.*;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.util.PsiTypesUtil;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
@@ -161,9 +160,11 @@ final class WODAnnotator implements Annotator {
         try {
             WOPsiUtil.getPsiClassForComponentName(className, component.getProject());
         } catch (Exception e) {
-            holder.newAnnotation(HighlightSeverity.ERROR, e.getMessage())
-                    .range(component)
-                    .create();
+            if (e.getMessage() != null) {
+                holder.newAnnotation(HighlightSeverity.ERROR, e.getMessage())
+                        .range(component)
+                        .create();
+            }
         }
     }
 
@@ -227,16 +228,20 @@ final class WODAnnotator implements Annotator {
             }
         }
 
+        // Validate against java fields or methods or getters -> Done in WODKeyPathReference
+        // TODO: If value starts with ^ it should be specified in the API file -> warning
+        // In the WOD, The key 'WOComponentName' uses a value that is deprecated.
+        // TODO: In the WOD, Unable to verify key 'meldung' because the keypath 'iterUpload.fehler' in LPModernMediaUpload passes through a collection
+        // There is no key 'showNavigationx' in CMAppKitLogin
+
+
         PsiClass baseClass = WOPsiUtil.getPsiClass(value);
         if (baseClass == null) {
             return;
         }
 
         if (value.getString() != null) {
-            PsiClass resolveSegment = KeyValueCodingUtil.resolveSegment(baseClass, value.getString().getText());
-            if (resolveSegment == null) {
-                holder.createErrorAnnotation(value, "Invalid key path");
-            }
+            // TODO: Check References for KeyPath Targets!
             return;
         }
         if (value.getNumber() != null) {
@@ -244,19 +249,82 @@ final class WODAnnotator implements Annotator {
             return;
         }
         if (value.getWODKeyPath() != null) {
-            annotateKeyPath(baseClass, value.getWODKeyPath(), holder);
+            annotateKeyPath(value, baseClass, value.getWODKeyPath(), holder);
         }
     }
-    private void annotateKeyPath(@NotNull PsiClass baseClass, @NotNull WODKeyPath keyPath, @NotNull AnnotationHolder holder) {
+    private void annotateKeyPath(@NotNull WODValue value, @NotNull PsiClass baseClass, @NotNull WODKeyPath keyPath, @NotNull AnnotationHolder holder) {
+        PsiClass iterClass = baseClass;
+        for (WODKeyPathElement element : keyPath.getWODKeyPathElementList()) {
+            // Dieser Aufruf ZWINGT den ReferenceContributor anzuspringen!
+            PsiReference[] references = element.getReferences();
 
-        // TODO: Validate against java fields or methods or getters
-        //       If value starts with ^ it should be specified in the API file -> warning
-        // In the WOD, The key 'WOComponentName' uses a value that is deprecated.
-        // In the WOD, Unable to verify key 'meldung' because the keypath 'iterUpload.fehler' in LPModernMediaUpload passes through a collection
+            for (PsiReference reference : references) {
+                PsiElement target = reference.resolve();
 
-        PsiClass resolveSegment = KeyValueCodingUtil.resolveWODKeyPath(baseClass, keyPath);
-        if (resolveSegment == null) {
-            holder.createErrorAnnotation(keyPath, "Invalid key path");
+                if (target instanceof PsiField field) {
+                    TextAttributesKey fieldKey;
+                    if (field.hasModifierProperty(PsiModifier.STATIC)) {
+                        fieldKey = field.hasModifierProperty(PsiModifier.FINAL)
+                                ? JavaHighlightingColors.STATIC_FINAL_FIELD_ATTRIBUTES
+                                : JavaHighlightingColors.STATIC_FIELD_ATTRIBUTES;
+                    } else {
+                        fieldKey = JavaHighlightingColors.INSTANCE_FIELD_ATTRIBUTES;
+                    }
+
+                    holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+                            .range(element)
+                            .textAttributes(fieldKey)
+                            .create();
+
+                    iterClass = PsiTypesUtil.getPsiClass(field.getType());
+                }
+                else if (target instanceof PsiMethod method) {
+                    TextAttributesKey methodKey = method.hasModifierProperty(PsiModifier.STATIC)
+                            ? JavaHighlightingColors.STATIC_METHOD_ATTRIBUTES
+                            : JavaHighlightingColors.METHOD_CALL_ATTRIBUTES;
+
+                    holder.newSilentAnnotation(HighlightSeverity.INFORMATION)
+                            .range(element)
+                            .textAttributes(methodKey)
+                            .create();
+
+                    iterClass = PsiTypesUtil.getPsiClass(method.getReturnType());
+                }
+                // Ignore if iterClass is baseClass or else every missing field would show this warning...
+                else if (target == null && !baseClass.equals(iterClass) && implementsKeyValueCoding(iterClass)) {
+                    holder.newAnnotation(HighlightSeverity.WARNING, "Unable to verify key '" + element.getText() + "' because the class " + iterClass.getName() + " implements dynamic Key Value Coding")
+                            .range(element)
+                            .create();
+                }
+                else if (target == null && iterClass != null /* is probably always true */) {
+                    holder.newAnnotation(HighlightSeverity.ERROR, "There is no key '" + element.getText() + "' in " + iterClass.getName())
+                            .range(element)
+                            .create();
+                }
+                else {
+                    holder.newAnnotation(HighlightSeverity.WARNING, "Error in plugin: Keypath resolved to " + target)
+                            .range(element)
+                            .create();
+                }
+            }
         }
     }
+
+    public boolean implementsKeyValueCoding(PsiClass psiClass) {
+        if (psiClass == null) return false;
+
+        // 1. Locate the interface target in the project context / classpath
+        PsiClass targetInterface = JavaPsiFacade.getInstance(psiClass.getProject())
+                .findClass("com.webobjects.foundation.NSKeyValueCoding",
+                        GlobalSearchScope.allScope(psiClass.getProject()));
+
+        if (targetInterface == null) {
+            // The WebObjects library isn't on the project's classpath
+            return false;
+        }
+
+        // 2. Perform a deep structural check up the inheritance tree
+        return psiClass.isInheritor(targetInterface, true);
+    }
+
 }

@@ -57,8 +57,8 @@ public class WOComponentEditor implements FileEditor {
                     ? createIntellijFileEditor(wodFile)
                     : null;
 
-            // Create a splitter with 80:20 ratio
-            OnePixelSplitter splitter = new OnePixelSplitter(true, 0.8f);
+            // Create a splitter with 2:1 ratio
+            OnePixelSplitter splitter = new OnePixelSplitter(true, 0.66f);
             splitter.setFirstComponent(htmlEditor.getComponent());
             splitter.setSecondComponent(wodFileEditor != null ? wodFileEditor.getComponent() : JBUI.Panels.simplePanel());
 

@@ -12,7 +12,7 @@ public class WOFileUtil {
     public static final String WOO_EXTENSION = "woo";
 
     public static boolean fileIsComponent(@NotNull VirtualFile file) {
-        return COMPONENT_EXTENSION.equalsIgnoreCase(file.getExtension());
+        return file.isDirectory() && COMPONENT_EXTENSION.equalsIgnoreCase(file.getExtension());
     }
 
     public static boolean fileIsInComponent(@NotNull VirtualFile file) {
@@ -20,19 +20,23 @@ public class WOFileUtil {
     }
 
     public static boolean fileIsComponentTemplate(@NotNull VirtualFile file) {
-        return TEMPLATE_EXTENSION.equalsIgnoreCase(file.getExtension()) && fileIsComponent(file.getParent());
+        VirtualFile parent = file.getParent();
+        return !file.isDirectory() && TEMPLATE_EXTENSION.equalsIgnoreCase(file.getExtension()) && parent != null && fileIsComponent(parent);
     }
 
     public static boolean fileIsComponentDeclaration(@NotNull VirtualFile file) {
-        return DECLARATION_EXTENSION.equalsIgnoreCase(file.getExtension()) && fileIsComponent(file.getParent());
+        VirtualFile parent = file.getParent();
+        return !file.isDirectory() && DECLARATION_EXTENSION.equalsIgnoreCase(file.getExtension()) && parent != null && fileIsComponent(parent);
     }
 
     public static boolean fileIsComponentApi(@NotNull VirtualFile file) {
-        return API_EXTENSION.equalsIgnoreCase(file.getExtension()) && fileIsComponent(file.getParent());
+        VirtualFile parent = file.getParent();
+        return !file.isDirectory() && API_EXTENSION.equalsIgnoreCase(file.getExtension()) && parent != null && fileIsComponent(parent);
     }
 
     public static boolean fileIsComponentWoo(@NotNull VirtualFile file) {
-        return WOO_EXTENSION.equalsIgnoreCase(file.getExtension()) && fileIsComponent(file.getParent());
+        VirtualFile parent = file.getParent();
+        return !file.isDirectory() && WOO_EXTENSION.equalsIgnoreCase(file.getExtension()) && parent != null && fileIsComponent(parent);
     }
 
     public static String getComponentName(@NotNull VirtualFile file) {

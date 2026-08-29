@@ -7,6 +7,7 @@
   psiImplClassSuffix="Impl"
   psiPackage="org.wocommunity.plugins.intellij.psi.wod"
   psiImplPackage="org.wocommunity.plugins.intellij.psi.wod.impl"
+  generate=[visitor="no"]
 
   elementTypeHolderClass="org.wocommunity.plugins.intellij.psi.wod.WODTypes"
   elementTypeClass="org.wocommunity.plugins.intellij.psi.wod.WODElementType"
@@ -56,4 +57,6 @@ WODValue ::= STRING | WODKeyPath | NUMBER
 
 WODKeyPath ::= WODKeyPathElement (DOT WODKeyPathElement)*
 
-WODKeyPathElement ::= IDENTIFIER
+WODKeyPathElement ::= IDENTIFIER {
+    mixin="org.wocommunity.plugins.intellij.psi.wod.impl.WODKeyPathElementMixin"
+}
