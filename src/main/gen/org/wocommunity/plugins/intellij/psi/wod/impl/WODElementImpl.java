@@ -7,10 +7,9 @@ import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.wocommunity.plugins.intellij.psi.wod.WODTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.wocommunity.plugins.intellij.psi.wod.*;
 
-public class WODElementImpl extends ASTWrapperPsiElement implements WODElement {
+public class WODElementImpl extends WODElementMixin implements WODElement {
 
   public WODElementImpl(@NotNull ASTNode node) {
     super(node);

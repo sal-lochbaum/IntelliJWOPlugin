@@ -74,6 +74,7 @@
         <lang.inspectionSuppressor language="HTML" implementationClass="org.wocommunity.plugins.intellij.wotemplate.WOHtmlInspectionSuppressor"/>
         <completion.contributor language="HTML" implementationClass="org.wocommunity.plugins.intellij.wotemplate.WOHtmlTagCompletionContributor"/>
         <completion.contributor language="HTML" implementationClass="org.wocommunity.plugins.intellij.wotemplate.WOHtmlAttributeCompletionContributor"/>
+        <psi.referenceContributor language="HTML" implementation="org.wocommunity.plugins.intellij.wotemplate.WOHtmlWebObjectReferenceContributor"/>
 
         <fileType name="Web Object Declaration" implementationClass="org.wocommunity.plugins.intellij.wod.WODFileType" fieldName="INSTANCE" language="WOD" extensions="wod"/>
         <lang.parserDefinition language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODParserDefinition"/>
