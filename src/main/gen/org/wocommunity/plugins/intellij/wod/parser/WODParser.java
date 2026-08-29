@@ -199,15 +199,29 @@ public class WODParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // STRING | WODKeyPath | NUMBER
+  // STRING | WODParentBinding | WODKeyPath | NUMBER
   public static boolean WODValue(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "WODValue")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, WOD_VALUE, "<wod value>");
     r = consumeToken(b, STRING);
+    if (!r) r = WODParentBinding(b, l + 1);
     if (!r) r = WODKeyPath(b, l + 1);
     if (!r) r = consumeToken(b, NUMBER);
     exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // CARET IDENTIFIER
+  public static boolean WODParentBinding(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "WODParentBinding")) return false;
+    if (!nextTokenIs(b, CARET)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, CARET);
+    r = r && consumeToken(b, IDENTIFIER);
+    exit_section_(b, m, WOD_PARENT_BINDING, r);
     return r;
   }
 

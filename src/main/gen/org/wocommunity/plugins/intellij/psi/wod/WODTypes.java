@@ -17,10 +17,12 @@ public interface WODTypes {
   IElementType WOD_ELEMENT = new WODElementType("WOD_ELEMENT");
   IElementType WOD_KEY_PATH = new WODElementType("WOD_KEY_PATH");
   IElementType WOD_KEY_PATH_ELEMENT = new WODElementType("WOD_KEY_PATH_ELEMENT");
+  IElementType WOD_PARENT_BINDING = new WODElementType("WOD_PARENT_BINDING");
   IElementType WOD_VALUE = new WODElementType("WOD_VALUE");
 
   IElementType ASSIGN = new WODTokenType("=");
   IElementType COLON = new WODTokenType(":");
+  IElementType CARET = new WODTokenType("^");
   IElementType COMMENT = new WODTokenType("COMMENT");
   IElementType DOT = new WODTokenType(".");
   IElementType IDENTIFIER = new WODTokenType("IDENTIFIER");
@@ -61,6 +63,9 @@ public interface WODTypes {
       }
       else if (type == WOD_KEY_PATH_ELEMENT) {
         return new WODKeyPathElementImpl(node);
+      }
+      else if (type == WOD_PARENT_BINDING) {
+        return new WODParentBindingImpl(node);
       }
       else if (type == WOD_VALUE) {
         return new WODValueImpl(node);

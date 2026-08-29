@@ -36,6 +36,7 @@ COMMENT="//".*|"/"\*([^*]|\*+[^*/])*\*+"/"
   {WHITE_SPACE}       { return WHITE_SPACE; }
 
   ";"                 { return SEMI; }
+  "^"                 { return CARET; }
   ":"                 { return COLON; }
   "="                 { return ASSIGN; }
   "{"                 { return LBRACE; }
