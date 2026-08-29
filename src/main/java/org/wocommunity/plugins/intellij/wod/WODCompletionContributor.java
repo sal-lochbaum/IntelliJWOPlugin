@@ -41,6 +41,7 @@ public class WODCompletionContributor extends CompletionContributor {
                                 case WODElement element -> completeIdentifier4Element(element, parameters, context, result);
                                 case WODComponent component -> completeIdentifier4Component(component, parameters, context, result);
                                 case WODBinding binding -> completeIdentifier4Binding(binding, parameters, context, result);
+                                case WODParentBinding parentBinding -> completeIdentifier4ParentBinding(parentBinding, result);
                                 case WODKeyPath keyPath -> completeIdentifier4KeyPath(keyPath, parameters, context, result);
                                 case WODKeyPathElement keyPath -> completeIdentifier4KeyPath((WODKeyPath)keyPath.getParent(), parameters, context, result);
                                 default -> {System.out.println("Unknown parent type: " + parent.getClass().getName());}
@@ -49,6 +50,18 @@ public class WODCompletionContributor extends CompletionContributor {
                     }
                 }
         );
+    }
+
+    protected void completeIdentifier4ParentBinding(@NotNull WODParentBinding parentBinding,
+                                                    @NotNull CompletionResultSet result) {
+        PsiDirectory componentFolder = WOPsiUtil.getComponentFolder(parentBinding);
+        if (componentFolder == null) {
+            return;
+        }
+        APIFile api = WOPsiUtil.getApiFile(componentFolder);
+        if (api != null) {
+            api.getBindingNames().forEach(name -> result.addElement(LookupElementBuilder.create(name)));
+        }
     }
 
     protected void completeIdentifier4Element(@NotNull WODElement element,

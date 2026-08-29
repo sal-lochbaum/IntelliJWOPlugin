@@ -229,16 +229,10 @@ final class WODAnnotator implements Annotator {
         }
 
         // Validate against java fields or methods or getters -> Done in WODKeyPathReference
-        // TODO: If value starts with ^ it should be specified in the API file -> warning
         // In the WOD, The key 'WOComponentName' uses a value that is deprecated.
         // TODO: In the WOD, Unable to verify key 'meldung' because the keypath 'iterUpload.fehler' in LPModernMediaUpload passes through a collection
         // There is no key 'showNavigationx' in CMAppKitLogin
 
-
-        PsiClass baseClass = WOPsiUtil.getPsiClass(value);
-        if (baseClass == null) {
-            return;
-        }
 
         if (value.getString() != null) {
             // TODO: Check References for KeyPath Targets!
@@ -248,8 +242,29 @@ final class WODAnnotator implements Annotator {
             // TODO Are there cases where simple numbers are invalid?
             return;
         }
+        if (value.getWODParentBinding() != null) {
+            annotateParentBinding(value.getWODParentBinding(), holder);
+            return;
+        }
+        PsiClass baseClass = WOPsiUtil.getPsiClass(value);
+        if (baseClass == null) {
+            return;
+        }
         if (value.getWODKeyPath() != null) {
             annotateKeyPath(value, baseClass, value.getWODKeyPath(), holder);
+        }
+    }
+
+    private void annotateParentBinding(@NotNull WODParentBinding parentBinding, @NotNull AnnotationHolder holder) {
+        PsiDirectory componentFolder = WOPsiUtil.getComponentFolder(parentBinding);
+        APIFile apiFile = componentFolder == null ? null : WOPsiUtil.getApiFile(componentFolder);
+        String bindingName = parentBinding.getIdentifier().getText();
+
+        if (apiFile == null || !apiFile.getBindingNames().contains(bindingName)) {
+            holder.newAnnotation(HighlightSeverity.ERROR,
+                            "Parent binding '" + bindingName + "' is not declared in this component's .api file")
+                    .range(parentBinding)
+                    .create();
         }
     }
     private void annotateKeyPath(@NotNull WODValue value, @NotNull PsiClass baseClass, @NotNull WODKeyPath keyPath, @NotNull AnnotationHolder holder) {

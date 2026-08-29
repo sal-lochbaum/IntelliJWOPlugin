@@ -24,6 +24,12 @@ public class WODValueImpl extends ASTWrapperPsiElement implements WODValue {
 
   @Override
   @Nullable
+  public WODParentBinding getWODParentBinding() {
+    return findChildByClass(WODParentBinding.class);
+  }
+
+  @Override
+  @Nullable
   public PsiElement getNumber() {
     return findChildByType(NUMBER);
   }

@@ -11,6 +11,9 @@ public interface WODValue extends PsiElement {
   WODKeyPath getWODKeyPath();
 
   @Nullable
+  WODParentBinding getWODParentBinding();
+
+  @Nullable
   PsiElement getNumber();
 
   @Nullable
