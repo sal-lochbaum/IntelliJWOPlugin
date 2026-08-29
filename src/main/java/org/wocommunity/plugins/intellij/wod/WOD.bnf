@@ -39,7 +39,9 @@ WODDeclaration ::= WODElement COLON WODComponent LBRACE WODAssignmentList RBRACE
     pin=1
 }
 
-WODElement ::= IDENTIFIER
+WODElement ::= IDENTIFIER {
+    mixin="org.wocommunity.plugins.intellij.psi.wod.impl.WODElementMixin"
+}
 
 WODComponent ::= IDENTIFIER
 
