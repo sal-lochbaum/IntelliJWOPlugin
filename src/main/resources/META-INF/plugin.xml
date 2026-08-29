@@ -71,6 +71,7 @@
         <xml.attributeDescriptorsProvider implementation="org.wocommunity.plugins.intellij.wotemplate.WOHtmlAttributeDescriptorsProvider"/>
         <xml.fileNSInfoProvider implementation="org.wocommunity.plugins.intellij.wotemplate.WOHtmlFileNSInfoProvider"/>
         <xml.xmlExtension implementation="org.wocommunity.plugins.intellij.wotemplate.WOHtmlXmlExtension"/>
+        <lang.inspectionSuppressor language="HTML" implementationClass="org.wocommunity.plugins.intellij.wotemplate.WOHtmlInspectionSuppressor"/>
         <completion.contributor language="HTML" implementationClass="org.wocommunity.plugins.intellij.wotemplate.WOHtmlTagCompletionContributor"/>
         <completion.contributor language="HTML" implementationClass="org.wocommunity.plugins.intellij.wotemplate.WOHtmlAttributeCompletionContributor"/>
 
