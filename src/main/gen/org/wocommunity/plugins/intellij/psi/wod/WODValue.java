@@ -17,6 +17,9 @@ public interface WODValue extends PsiElement {
   PsiElement getNumber();
 
   @Nullable
+  PsiElement getBoolean();
+
+  @Nullable
   PsiElement getString();
 
 }

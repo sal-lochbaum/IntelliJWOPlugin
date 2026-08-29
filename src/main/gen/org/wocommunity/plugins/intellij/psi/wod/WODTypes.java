@@ -21,6 +21,7 @@ public interface WODTypes {
   IElementType WOD_VALUE = new WODElementType("WOD_VALUE");
 
   IElementType ASSIGN = new WODTokenType("=");
+  IElementType BOOLEAN = new WODTokenType("BOOLEAN");
   IElementType COLON = new WODTokenType(":");
   IElementType CARET = new WODTokenType("^");
   IElementType COMMENT = new WODTokenType("COMMENT");

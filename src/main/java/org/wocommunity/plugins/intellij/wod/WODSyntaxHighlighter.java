@@ -14,10 +14,12 @@ public class WODSyntaxHighlighter extends SyntaxHighlighterBase {
     public static final TextAttributesKey COMMENT = createTextAttributesKey("WOD_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT);
     public static final TextAttributesKey STRING = createTextAttributesKey("WOD_STRING", DefaultLanguageHighlighterColors.STRING);
     public static final TextAttributesKey NUMBER = createTextAttributesKey("WOD_NUMBER", DefaultLanguageHighlighterColors.NUMBER);
+    public static final TextAttributesKey BOOLEAN = createTextAttributesKey("WOD_BOOLEAN", DefaultLanguageHighlighterColors.KEYWORD);
 
     private static final TextAttributesKey[] COMMENT_KEYS = new TextAttributesKey[]{COMMENT};
     private static final TextAttributesKey[] STRING_KEYS = new TextAttributesKey[]{STRING};
     private static final TextAttributesKey[] NUMBER_KEYS = new TextAttributesKey[]{NUMBER};
+    private static final TextAttributesKey[] BOOLEAN_KEYS = new TextAttributesKey[]{BOOLEAN};
     private static final TextAttributesKey[] EMPTY_KEYS = new TextAttributesKey[0];
 
     @Override
@@ -35,6 +37,9 @@ public class WODSyntaxHighlighter extends SyntaxHighlighterBase {
         }
         if (iElementType.equals(WODTypes.NUMBER)) {
             return NUMBER_KEYS;
+        }
+        if (iElementType.equals(WODTypes.BOOLEAN)) {
+            return BOOLEAN_KEYS;
         }
         return EMPTY_KEYS;
     }
