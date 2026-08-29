@@ -199,7 +199,7 @@ public class WODParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // STRING | WODParentBinding | WODKeyPath | NUMBER
+  // STRING | WODParentBinding | WODKeyPath | NUMBER | BOOLEAN
   public static boolean WODValue(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "WODValue")) return false;
     boolean r;
@@ -208,6 +208,7 @@ public class WODParser implements PsiParser, LightPsiParser {
     if (!r) r = WODParentBinding(b, l + 1);
     if (!r) r = WODKeyPath(b, l + 1);
     if (!r) r = consumeToken(b, NUMBER);
+    if (!r) r = consumeToken(b, BOOLEAN);
     exit_section_(b, l, m, r, false, null);
     return r;
   }

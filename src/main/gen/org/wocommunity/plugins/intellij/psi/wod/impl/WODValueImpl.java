@@ -36,6 +36,12 @@ public class WODValueImpl extends ASTWrapperPsiElement implements WODValue {
 
   @Override
   @Nullable
+  public PsiElement getBoolean() {
+    return findChildByType(BOOLEAN);
+  }
+
+  @Override
+  @Nullable
   public PsiElement getString() {
     return findChildByType(STRING);
   }

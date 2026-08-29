@@ -28,6 +28,7 @@ WHITE_SPACE=\s+
 WS=[ \t\n\x0B\f\r]+
 IDENTIFIER=[a-zA-Z_][a-zA-Z0-9_\-]*
 NUMBER=[0-9]+
+BOOLEAN=true|false
 STRING=\"([^\\\"\r\n]|\\[^\r\n])*\"
 COMMENT="//".*|"/"\*([^*]|\*+[^*/])*\*+"/"
 
@@ -46,6 +47,7 @@ COMMENT="//".*|"/"\*([^*]|\*+[^*/])*\*+"/"
   "valid"             { return VALID_KEYWORD; }
 
   {WS}                { return WS; }
+  {BOOLEAN}           { return BOOLEAN; }
   {IDENTIFIER}        { return IDENTIFIER; }
   {NUMBER}            { return NUMBER; }
   {STRING}            { return STRING; }
