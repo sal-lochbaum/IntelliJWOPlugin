@@ -40,7 +40,10 @@ public final class WOHtmlElementDescriptorProvider implements XmlElementDescript
         String localTagName = tag.getLocalName();
 
         if ("webobject".equalsIgnoreCase(localTagName)) {
-            return new WOXmlElementDescriptor("webobject", null);
+            // TagNameReference.resolve() uses the descriptor declaration. A
+            // null declaration therefore still produces an unresolved-symbol
+            // error, even though the descriptor itself is present.
+            return new WOXmlElementDescriptor("webobject", tag);
         }
 
         String prefix = tag.getNamespacePrefix();
@@ -143,4 +146,3 @@ public final class WOHtmlElementDescriptorProvider implements XmlElementDescript
         return woElement != null && InheritanceUtil.isInheritorOrSelf(candidate, woElement, true);
     }
 }
-
