@@ -13,6 +13,7 @@ import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.wocommunity.plugins.intellij.psi.references.WODElementReference;
 import org.wocommunity.plugins.intellij.tools.KeyValueCodingUtil;
 import org.wocommunity.plugins.intellij.tools.WOPsiUtil;
 import org.wocommunity.plugins.intellij.psi.api.APIFile;
@@ -22,9 +23,8 @@ import org.wocommunity.plugins.intellij.wotemplate.WOSystemBindingDefinitions;
 import java.util.*;
 
 /*
- * An Annotator helps highlight and annotate any code based on specific rules.
- *
- * Annotate the different usages of IDENTIFIER tokens
+ * TODO: Most of these checks should be moved to the references.
+ *  Then the references can be used to annotate the wod file.
  */
 final class WODAnnotator implements Annotator {
 
@@ -35,8 +35,6 @@ final class WODAnnotator implements Annotator {
             case WODComponent component -> annotateComponent(component, holder);
             case WODBinding binding -> annotateBinding(binding, holder);
             case WODValue value -> annotateValue(value, holder);
-
-            //case WODKeyPath keyPath -> annotateKeyPath(keyPath, holder);
             default -> {}
         }
     }
@@ -77,11 +75,17 @@ final class WODAnnotator implements Annotator {
 
         // Find out which elements are named in the HTML file and match against the identifier of this element
         //       -> Identifier is not used => weak warning
-        List<String> namesFromHtml = getNamesFromHTMLTemplate(element.getContainingFile());
-        if (namesFromHtml.stream().noneMatch(element.getIdentifier().getText()::equals)) {
-            holder.newAnnotation(HighlightSeverity.WEAK_WARNING, "There is no element named '" + element.getIdentifier().getText() + "' in your component HTML file")
-                    .range(element)
-                    .create();
+        PsiReference[] references = element.getReferences();
+
+        for (PsiReference reference : references) {
+            if (reference instanceof WODElementReference) {
+                PsiElement resolved = reference.resolve();
+                if (resolved == null) {
+                    holder.newAnnotation(HighlightSeverity.WEAK_WARNING, "There is no element named '" + element.getIdentifier().getText() + "' in your component HTML file")
+                            .range(element)
+                            .create();
+                }
+            }
         }
 
         // Check duplicate identifiers => error
@@ -114,32 +118,6 @@ final class WODAnnotator implements Annotator {
                 }
             }
         }
-    }
-
-    // FIXME: This should probably be somewhere central or close to the HTML-File? :o
-    private List<String> getNamesFromHTMLTemplate(PsiFile wodFile) {
-        List<String> elementNames = new ArrayList<>();
-
-        PsiFile htmlFile = WOPsiUtil.getTemplateFile(wodFile);
-        if (htmlFile == null) {
-            return elementNames;
-        }
-
-        Collection<XmlTag> tags = PsiTreeUtil.findChildrenOfType(htmlFile, XmlTag.class);
-        if (tags.isEmpty()) {
-            return elementNames;
-        }
-
-        for (XmlTag tag : tags) {
-            if (tag.getName().equals("webobject")) {
-                @Nullable XmlAttribute name = tag.getAttribute("name");
-                if (name != null) {
-                    elementNames.add(name.getValue());
-                }
-            }
-        }
-
-        return elementNames;
     }
 
     private void annotateComponent(@NotNull WODComponent component, @NotNull AnnotationHolder holder) {
