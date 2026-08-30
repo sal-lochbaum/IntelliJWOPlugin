@@ -7,12 +7,18 @@ import com.intellij.psi.PsiDirectory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.wocommunity.plugins.intellij.tools.WOIcons;
+import org.wocommunity.plugins.intellij.tools.WOFileUtil;
 
 public class WOComponentEditorTabTitleProvider implements EditorTabTitleProvider {
     @Override
     public @Nullable String getEditorTabTitle(@NotNull Project project, @NotNull VirtualFile file) {
         if (file.getName().endsWith(".wo"))
-            return file.getName().replace(".wo", " WO");
+            return file.getNameWithoutExtension();
+
+        VirtualFile component = WOFileUtil.getComponent(file);
+        if (component != null) {
+            return component.getNameWithoutExtension();
+        }
 
         return null; // Return null to use the default title
     }

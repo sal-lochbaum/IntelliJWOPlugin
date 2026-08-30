@@ -7,10 +7,15 @@ import com.intellij.openapi.actionSystem.UiDataProvider;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.FileEditorLocation;
 import com.intellij.openapi.fileEditor.FileEditorState;
+import com.intellij.openapi.fileEditor.NavigatableFileEditor;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider;
+import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.pom.Navigatable;
 import com.intellij.ui.OnePixelSplitter;
 import com.intellij.ui.components.JBTabbedPane;
 import com.intellij.util.ui.JBUI;
@@ -27,23 +32,34 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class WOComponentEditor implements FileEditor {
+public class WOComponentEditor implements com.intellij.openapi.fileEditor.TextEditor {
 
     private final VirtualFile folder;
+    private final VirtualFile requestedFile;
     private final JComponent component;
     private final Map<String, String> changes; // Centralized change tracker
     private final Project project;
     private final Map<JComponent, FileEditor> embeddedEditorsByComponent;
+    private final Map<VirtualFile, FileEditor> embeddedEditorsByFile = new HashMap<>();
+    private final Map<VirtualFile, Integer> tabIndexByFile = new HashMap<>();
+    private final JBTabbedPane tabbedPane;
 
     private final Map<Key<?>, Object> userData = new HashMap<>();
 
     public WOComponentEditor(@NotNull Project project, @NotNull VirtualFile folder) throws IOException {
+        this(project, folder, folder);
+    }
+
+    public WOComponentEditor(@NotNull Project project,
+                             @NotNull VirtualFile folder,
+                             @NotNull VirtualFile editorFile) throws IOException {
         this.project = project;
         this.folder = folder;
+        this.requestedFile = editorFile;
         this.changes = new HashMap<>();
         this.embeddedEditorsByComponent = new HashMap<>();
 
-        JBTabbedPane tabbedPane = new JBTabbedPane();
+        this.tabbedPane = new JBTabbedPane();
 
         String componentName = folder.getName().replace(".wo", "");
 
@@ -56,6 +72,12 @@ public class WOComponentEditor implements FileEditor {
             FileEditor wodFileEditor = (wodFile != null && !wodFile.isDirectory())
                     ? createIntellijFileEditor(wodFile)
                     : null;
+            embeddedEditorsByFile.put(htmlFile, htmlEditor);
+            tabIndexByFile.put(htmlFile, 0);
+            if (wodFile != null && wodFileEditor != null) {
+                embeddedEditorsByFile.put(wodFile, wodFileEditor);
+                tabIndexByFile.put(wodFile, 0);
+            }
 
             // Create a splitter with 2:1 ratio
             OnePixelSplitter splitter = new OnePixelSplitter(true, 0.66f);
@@ -72,6 +94,8 @@ public class WOComponentEditor implements FileEditor {
 //            apiFile = folder.getParent().createChildData(null, componentName + ".api");
         } else if (!apiFile.isDirectory()) {
             FileEditor apiFileEditor = createIntellijFileEditor(apiFile);
+            embeddedEditorsByFile.put(apiFile, apiFileEditor);
+            tabIndexByFile.put(apiFile, tabbedPane.getTabCount());
             tabbedPane.addTab("API", apiFileEditor.getComponent());
         }
 
@@ -82,11 +106,17 @@ public class WOComponentEditor implements FileEditor {
            // TODO wooFile = folder.getParent().createChildData(null, componentName + ".woo");
         } else if (!wooFile.isDirectory()) {
             FileEditor textEditor = createIntellijFileEditor(wooFile);
+            embeddedEditorsByFile.put(wooFile, textEditor);
+            tabIndexByFile.put(wooFile, tabbedPane.getTabCount());
             tabbedPane.addTab("DisplayGroup", textEditor.getComponent());
         }
 
         tabbedPane.setTabPlacement(JBTabbedPane.BOTTOM);
         tabbedPane.setSelectedIndex(0);
+        // A search result may create this composite editor for an API/WOO child
+        // that was not open yet. Select that child once during initialization;
+        // getEditor() must remain side-effect free for normal focus changes.
+        selectTabForFile(requestedFile);
 
         this.component = new WOComponentPanel(project, folder, tabbedPane, embeddedEditorsByComponent);
     }
@@ -94,7 +124,48 @@ public class WOComponentEditor implements FileEditor {
     private FileEditor createIntellijFileEditor(@NotNull VirtualFile file) {
         FileEditor editor = TextEditorProvider.getInstance().createEditor(project, file);
         embeddedEditorsByComponent.put(editor.getComponent(), editor);
+        if (editor instanceof com.intellij.openapi.fileEditor.TextEditor textEditor) {
+            textEditor.getEditor().getCaretModel().addCaretListener(new com.intellij.openapi.editor.event.CaretListener() {
+                @Override
+                public void caretPositionChanged(com.intellij.openapi.editor.event.CaretEvent event) {
+                    selectTabForFile(file);
+                }
+            });
+        }
         return editor;
+    }
+
+    @Override
+    public @NotNull com.intellij.openapi.editor.Editor getEditor() {
+        // During search navigation the selected file is the child file, while the
+        // outer editor is keyed by the .wo directory. Return that child's editor
+        // so IntelliJ's standard OpenFileDescriptor navigation can move its caret.
+        VirtualFile[] selectedFiles = FileEditorManager.getInstance(project).getSelectedFiles();
+        for (VirtualFile selectedFile : selectedFiles) {
+            FileEditor editor = embeddedEditorsByFile.get(selectedFile);
+            if (editor instanceof com.intellij.openapi.fileEditor.TextEditor textEditor) {
+                return textEditor.getEditor();
+            }
+        }
+
+        FileEditor focused = getFocusedEmbeddedEditor();
+        if (focused instanceof com.intellij.openapi.fileEditor.TextEditor textEditor) {
+            return textEditor.getEditor();
+        }
+        return embeddedEditorsByFile.values().stream()
+                .filter(com.intellij.openapi.fileEditor.TextEditor.class::isInstance)
+                .map(com.intellij.openapi.fileEditor.TextEditor.class::cast)
+                .findFirst()
+                .orElseThrow()
+                .getEditor();
+    }
+
+    private void selectTabForFile(@NotNull VirtualFile file) {
+        Integer tabIndex = tabIndexByFile.get(file);
+        if (tabIndex != null && tabIndex < tabbedPane.getTabCount()
+                && tabbedPane.getSelectedIndex() != tabIndex) {
+            tabbedPane.setSelectedIndex(tabIndex);
+        }
     }
 
     private @Nullable FileEditor getFocusedEmbeddedEditor() {
@@ -176,6 +247,42 @@ public class WOComponentEditor implements FileEditor {
     @Override
     public @Nullable FileEditorLocation getCurrentLocation() {
         return null;
+    }
+
+    @Override
+    public boolean canNavigateTo(@NotNull Navigatable navigatable) {
+        return navigatable instanceof OpenFileDescriptor descriptor
+                && embeddedEditorsByFile.containsKey(descriptor.getFile());
+    }
+
+    @Override
+    public void navigateTo(@NotNull Navigatable navigatable) {
+        if (!(navigatable instanceof OpenFileDescriptor descriptor)) {
+            return;
+        }
+
+        FileEditor fileEditor = embeddedEditorsByFile.get(descriptor.getFile());
+        if (!(fileEditor instanceof com.intellij.openapi.fileEditor.TextEditor textEditor)) {
+            return;
+        }
+
+        int tabIndex = tabIndexByFile.getOrDefault(descriptor.getFile(), 0);
+        if (tabIndex < tabbedPane.getTabCount()) {
+            tabbedPane.setSelectedIndex(tabIndex);
+        }
+
+        com.intellij.openapi.editor.Editor editor = textEditor.getEditor();
+        editor.getCaretModel().removeSecondaryCarets();
+        if (descriptor.getLine() >= 0) {
+            int line = Math.min(descriptor.getLine(), editor.getDocument().getLineCount() - 1);
+            int column = Math.max(0, descriptor.getColumn());
+            editor.getCaretModel().moveToLogicalPosition(new com.intellij.openapi.editor.LogicalPosition(line, column));
+        } else {
+            int offset = Math.max(0, Math.min(descriptor.getOffset(), editor.getDocument().getTextLength()));
+            editor.getCaretModel().moveToOffset(offset);
+        }
+        editor.getScrollingModel().scrollToCaret(com.intellij.openapi.editor.ScrollType.CENTER);
+        IdeFocusManager.getInstance(project).requestFocus(editor.getContentComponent(), true);
     }
 
     public void saveChanges() {

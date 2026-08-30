@@ -26,10 +26,10 @@ public class WOComponentEditorProvider implements FileEditorProvider, DumbAware 
     @Override
     public @NotNull FileEditor createEditor(@NotNull Project project, @NotNull VirtualFile file) {
         try {
-            if (WOFileUtil.fileIsComponent(file)) {
-                return new WOComponentEditor(project, file);
+            VirtualFile component = WOFileUtil.getComponent(file);
+            if (component != null) {
+                return new WOComponentEditor(project, component, file);
             }
-            return new WOComponentEditor(project, file.getParent());
         } catch (IOException e) {
             Notifications.Bus.notify(new Notification(
                     "WOComponent", "File Not Found",
