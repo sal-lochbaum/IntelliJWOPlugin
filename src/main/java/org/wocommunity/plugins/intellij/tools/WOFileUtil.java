@@ -31,7 +31,13 @@ public class WOFileUtil {
 
     public static boolean fileIsComponentApi(@NotNull VirtualFile file) {
         VirtualFile parent = file.getParent();
-        return !file.isDirectory() && API_EXTENSION.equalsIgnoreCase(file.getExtension()) && parent != null && fileIsComponent(parent);
+        if (file.isDirectory() || !API_EXTENSION.equalsIgnoreCase(file.getExtension()) || parent == null) {
+            return false;
+        }
+
+        // .api files are stored next to the .wo directory (unlike .html/.wod/.woo).
+        VirtualFile component = parent.findChild(file.getNameWithoutExtension() + "." + COMPONENT_EXTENSION);
+        return component != null && fileIsComponent(component);
     }
 
     public static boolean fileIsComponentWoo(@NotNull VirtualFile file) {
@@ -50,6 +56,9 @@ public class WOFileUtil {
     public static VirtualFile getComponent(@NotNull VirtualFile file) {
         if (fileIsComponent(file)) {
             return file;
+        }
+        if (fileIsComponentApi(file)) {
+            return file.getParent().findChild(file.getNameWithoutExtension() + "." + COMPONENT_EXTENSION);
         }
         if (fileIsInComponent(file)) {
             return file.getParent();

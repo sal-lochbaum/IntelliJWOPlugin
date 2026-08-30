@@ -76,6 +76,10 @@
         <completion.contributor language="HTML" implementationClass="org.wocommunity.plugins.intellij.wotemplate.WOHtmlAttributeCompletionContributor"/>
         <psi.referenceContributor language="HTML" implementation="org.wocommunity.plugins.intellij.wotemplate.WOHtmlWebObjectReferenceContributor"/>
 
+        <!-- TODO: Custom editor for API files -->
+        <fileType name="WebObjects Component API" implementationClass="com.intellij.ide.highlighter.XmlFileType" fieldName="INSTANCE" language="XML" extensions="api"/>
+
+        <!-- WOD files -->
         <fileType name="Web Object Declaration" implementationClass="org.wocommunity.plugins.intellij.wod.WODFileType" fieldName="INSTANCE" language="WOD" extensions="wod"/>
         <lang.parserDefinition language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODParserDefinition"/>
         <lang.formatter language="WOD" implementationClass="org.wocommunity.plugins.intellij.wod.WODFormattingModelBuilder"/>
