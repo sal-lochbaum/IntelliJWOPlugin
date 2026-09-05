@@ -17,6 +17,7 @@ public final class WODFormattingModelBuilder implements FormattingModelBuilder {
         SpacingBuilder spacingBuilder = new SpacingBuilder(settings, WODLanguage.INSTANCE);
         spacingBuilder.around(WODTypes.COLON).spaces(1);
         spacingBuilder.around(WODTypes.ASSIGN).spaces(1);
+        spacingBuilder.before(WODTypes.WOD_ASSIGNMENT_COMMENT).spaces(1);
         spacingBuilder.after(WODTypes.LBRACE).lineBreakInCode();
         spacingBuilder.between(WODTypes.WOD_ASSIGNMENT, WODTypes.WOD_ASSIGNMENT).lineBreakInCode();
         spacingBuilder.before(WODTypes.RBRACE).lineBreakInCode();

@@ -29,7 +29,7 @@ public class WODSyntaxHighlighter extends SyntaxHighlighterBase {
 
     @Override
     public TextAttributesKey @NotNull [] getTokenHighlights(IElementType iElementType) {
-        if (iElementType.equals(WODTypes.COMMENT)) {
+        if (iElementType.equals(WODTypes.COMMENT) || iElementType.equals(WODTypes.ASSIGNMENT_COMMENT)) {
             return COMMENT_KEYS;
         }
         if (iElementType.equals(WODTypes.STRING)) {

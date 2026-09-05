@@ -60,13 +60,13 @@ public class WODParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // SLASH SLASH VALID_KEYWORD
+  // ASSIGNMENT_COMMENT
   public static boolean WODAssignmentComment(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "WODAssignmentComment")) return false;
-    if (!nextTokenIs(b, SLASH)) return false;
+    if (!nextTokenIs(b, ASSIGNMENT_COMMENT)) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, SLASH, SLASH, VALID_KEYWORD);
+    r = consumeToken(b, ASSIGNMENT_COMMENT);
     exit_section_(b, m, WOD_ASSIGNMENT_COMMENT, r);
     return r;
   }

@@ -47,7 +47,7 @@ public class JavaLineMarkerProvider implements LineMarkerProvider {
                                 .filter(ref -> ref instanceof WODKeyPathReference)
                                 .map(ref -> ((WODKeyPathReference) ref).getElement())
                                 .toList())
-                        .setTooltipText("User in WO Component").createLineMarkerInfo(element);
+                        .setTooltipText("Used in WO Component").createLineMarkerInfo(element);
             }
         }
 

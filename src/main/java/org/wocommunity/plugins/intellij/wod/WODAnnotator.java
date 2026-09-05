@@ -21,6 +21,7 @@ import org.wocommunity.plugins.intellij.psi.wod.*;
 import org.wocommunity.plugins.intellij.wotemplate.WOSystemBindingDefinitions;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 /*
  * TODO: Most of these checks should be moved to the references.
@@ -198,22 +199,18 @@ final class WODAnnotator implements Annotator {
         }
     }
 
+    /** Writing "// valid" behind a valid skips validation. Matching is case-insensitive but the comment must start with "valid". */
+    private final Pattern validCommentPattern = Pattern.compile("^// ?valid.*", Pattern.CASE_INSENSITIVE);
     private void annotateValue(@NotNull WODValue value, @NotNull AnnotationHolder holder) {
         PsiElement parent = value.getParent();
         if (parent instanceof WODAssignment assignment) {
-            if (assignment.getWODAssignmentComment() != null && assignment.getWODAssignmentComment().getText().contains("valid")) {
-                return; // valid overwrites validation :)
+            if (assignment.getWODAssignmentComment() != null && validCommentPattern.matcher(assignment.getWODAssignmentComment().getText()).matches()) {
+                return;
             }
         }
 
-        // Validate against java fields or methods or getters -> Done in WODKeyPathReference
-        // In the WOD, The key 'WOComponentName' uses a value that is deprecated.
-        // TODO: In the WOD, Unable to verify key 'meldung' because the keypath 'iterUpload.fehler' in LPModernMediaUpload passes through a collection
-        // There is no key 'showNavigationx' in CMAppKitLogin
-
-
         if (value.getString() != null) {
-            // TODO: Check References for KeyPath Targets!
+            // TODO: Check References for KeyPath Targets?
             return;
         }
         if (value.getNumber() != null) {

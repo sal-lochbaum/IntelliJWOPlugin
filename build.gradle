@@ -34,7 +34,7 @@ dependencies {
         bundledPlugin("com.intellij.java")
 
         // Test Framework (bringt JUnit 4 + IntelliJ‑Test‑Infrastruktur)
-        // testFramework()
+        testFramework(org.jetbrains.intellij.platform.gradle.TestFrameworkType.Platform.INSTANCE)
     }
 
     // Weitere Dependencies

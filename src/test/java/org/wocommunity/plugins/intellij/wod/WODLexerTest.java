@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.wocommunity.plugins.intellij.psi.wod.WODTypes.BOOLEAN;
+import static org.wocommunity.plugins.intellij.psi.wod.WODTypes.*;
 
 class WODLexerTest {
     @Test
@@ -29,6 +29,39 @@ class WODLexerTest {
 
         assertToken(lexer, "trueValue");
         assertNull(lexer.getTokenType());
+    }
+
+    @Test
+    void distinguishesAssignmentCommentFromNormalComment() {
+        Lexer lexer = new WODLexerAdapter();
+        String input = "foo = \"bar\"; // same line\n// next line\nbaz = 1;";
+        lexer.start(input);
+
+        // foo
+        assertEquals(IDENTIFIER, lexer.getTokenType());
+        lexer.advance();
+        // =
+        lexer.advance(); // whitespace
+        assertEquals(ASSIGN, lexer.getTokenType());
+        lexer.advance();
+        // "bar"
+        lexer.advance(); // whitespace
+        assertEquals(STRING, lexer.getTokenType());
+        lexer.advance();
+        // ;
+        assertEquals(SEMI, lexer.getTokenType());
+        lexer.advance();
+        // whitespace
+        lexer.advance();
+        // // same line -> ASSIGNMENT_COMMENT
+        assertEquals(ASSIGNMENT_COMMENT, lexer.getTokenType());
+        assertEquals("// same line", lexer.getTokenText());
+        lexer.advance();
+        // whitespace (\n)
+        lexer.advance();
+        // // next line -> COMMENT
+        assertEquals(COMMENT, lexer.getTokenType());
+        assertEquals("// next line", lexer.getTokenText());
     }
 
     private static void assertToken(Lexer lexer, String text) {
