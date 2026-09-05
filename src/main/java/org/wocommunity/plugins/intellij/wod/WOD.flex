@@ -23,36 +23,42 @@ import static org.wocommunity.plugins.intellij.psi.wod.WODTypes.*;
 %unicode
 
 EOL=\R
-WHITE_SPACE=\s+
+WHITE_SPACE=[ \t\n\x0B\f\r]+
+HORIZONTAL_SPACE=[ \t\f]+
 
-WS=[ \t\n\x0B\f\r]+
 IDENTIFIER=[a-zA-Z_][a-zA-Z0-9_\-]*
 NUMBER=[0-9]+
 BOOLEAN=true|false
 STRING=\"([^\\\"\r\n]|\\[^\r\n])*\"
 COMMENT="//".*|"/"\*([^*]|\*+[^*/])*\*+"/"
 
+%xstate WAITING_ASSIGNMENT_COMMENT
+
 %%
 <YYINITIAL> {
   {WHITE_SPACE}       { return WHITE_SPACE; }
 
-  ";"                 { return SEMI; }
+  ";"                 { yybegin(WAITING_ASSIGNMENT_COMMENT); return SEMI; }
   "^"                 { return CARET; }
   ":"                 { return COLON; }
   "="                 { return ASSIGN; }
   "{"                 { return LBRACE; }
   "}"                 { return RBRACE; }
-  "/"                 { return SLASH; }
   "."                 { return DOT; }
-  "valid"             { return VALID_KEYWORD; }
 
-  {WS}                { return WS; }
   {BOOLEAN}           { return BOOLEAN; }
   {IDENTIFIER}        { return IDENTIFIER; }
   {NUMBER}            { return NUMBER; }
   {STRING}            { return STRING; }
   {COMMENT}           { return COMMENT; }
 
+}
+
+<WAITING_ASSIGNMENT_COMMENT> {
+  {HORIZONTAL_SPACE}  { return WHITE_SPACE; }
+  {COMMENT}           { yybegin(YYINITIAL); return ASSIGNMENT_COMMENT; }
+  {EOL}               { yybegin(YYINITIAL); return WHITE_SPACE; }
+  [^]                 { yypushback(1); yybegin(YYINITIAL); }
 }
 
 [^] { return BAD_CHARACTER; }

@@ -21,6 +21,7 @@ public interface WODTypes {
   IElementType WOD_VALUE = new WODElementType("WOD_VALUE");
 
   IElementType ASSIGN = new WODTokenType("=");
+  IElementType ASSIGNMENT_COMMENT = new WODTokenType("ASSIGNMENT_COMMENT");
   IElementType BOOLEAN = new WODTokenType("BOOLEAN");
   IElementType COLON = new WODTokenType(":");
   IElementType CARET = new WODTokenType("^");
@@ -31,9 +32,7 @@ public interface WODTypes {
   IElementType NUMBER = new WODTokenType("NUMBER");
   IElementType RBRACE = new WODTokenType("}");
   IElementType SEMI = new WODTokenType(";");
-  IElementType SLASH = new WODTokenType("/");
   IElementType STRING = new WODTokenType("STRING");
-  IElementType VALID_KEYWORD = new WODTokenType("valid");
 
   class Factory {
     public static PsiElement createElement(ASTNode node) {

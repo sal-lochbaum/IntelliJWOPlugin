@@ -49,7 +49,7 @@ public class WOPsiUtil {
     }
 
     public static boolean itemIsComponentApiFile(@NotNull PsiFileSystemItem item) {
-        return item instanceof APIFile || (item instanceof XmlFile && WOFileUtil.API_EXTENSION.equalsIgnoreCase(((PsiFile) item).getVirtualFile().getExtension()) /* TODO: For whatever reason the api file is parallel to the .wo folder and not inside */);
+        return item instanceof APIFile || (item instanceof XmlFile && WOFileUtil.API_EXTENSION.equalsIgnoreCase(((PsiFile) item).getVirtualFile().getExtension()) /* TODO: For whatever reason the api file is parallel to the .wo folder and not inside --- because there can be multiple .wo folders i.e. for localized components */);
     }
 
     public static boolean itemIsComponentWooFile(@NotNull PsiFileSystemItem item) {
