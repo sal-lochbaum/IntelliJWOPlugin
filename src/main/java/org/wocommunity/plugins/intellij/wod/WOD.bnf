@@ -44,7 +44,9 @@ WODElement ::= IDENTIFIER {
     mixin="org.wocommunity.plugins.intellij.psi.wod.impl.WODElementMixin"
 }
 
-WODComponent ::= IDENTIFIER
+WODComponent ::= IDENTIFIER {
+   mixin="org.wocommunity.plugins.intellij.psi.wod.impl.WODComponentMixin"
+}
 
 WODAssignmentList ::= WODAssignment *
 

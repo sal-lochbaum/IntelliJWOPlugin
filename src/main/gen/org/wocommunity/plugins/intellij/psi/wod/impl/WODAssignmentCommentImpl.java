@@ -16,4 +16,10 @@ public class WODAssignmentCommentImpl extends ASTWrapperPsiElement implements WO
     super(node);
   }
 
+  @Override
+  @NotNull
+  public PsiElement getAssignmentComment() {
+    return findNotNullChildByType(ASSIGNMENT_COMMENT);
+  }
+
 }

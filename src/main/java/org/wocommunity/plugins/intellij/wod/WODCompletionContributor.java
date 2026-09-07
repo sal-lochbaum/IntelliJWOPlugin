@@ -2,12 +2,13 @@ package org.wocommunity.plugins.intellij.wod;
 
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.project.Project;
 import com.intellij.patterns.PlatformPatterns;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiMember;
+import com.intellij.psi.*;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
 import org.wocommunity.plugins.intellij.tools.KeyValueCodingUtil;
@@ -17,6 +18,8 @@ import org.wocommunity.plugins.intellij.psi.wod.*;
 import org.wocommunity.plugins.intellij.wotemplate.WOSystemBindingDefinitions;
 
 import java.util.Set;
+
+import static org.wocommunity.plugins.intellij.tools.WOPsiUtil.WO_ELEMENT_FQN;
 
 public class WODCompletionContributor extends CompletionContributor {
     public WODCompletionContributor() {
@@ -50,6 +53,20 @@ public class WODCompletionContributor extends CompletionContributor {
                     }
                 }
         );
+
+        extend(CompletionType.BASIC,
+                PlatformPatterns.psiElement(WODTypes.IDENTIFIER).withParent(WODComponent.class),
+                new CompletionProvider<>() {
+                    @Override
+                    protected void addCompletions(@NotNull CompletionParameters parameters,
+                                                  @NotNull ProcessingContext context,
+                                                  @NotNull CompletionResultSet result) {
+                        PsiElement position = parameters.getPosition();
+                        PsiElement parent = position.getParent();
+                        completeIdentifier4Component((WODComponent) parent, parameters, context, result);
+                    }
+                }
+        );
     }
 
     protected void completeIdentifier4ParentBinding(@NotNull WODParentBinding parentBinding,
@@ -75,8 +92,27 @@ public class WODCompletionContributor extends CompletionContributor {
                                                 @NotNull CompletionParameters parameters,
                                                 @NotNull ProcessingContext context,
                                                 @NotNull CompletionResultSet result) {
-        result.addElement(LookupElementBuilder.create("ERXConditional"));
-        result.addElement(LookupElementBuilder.create("ERXElse"));
+        Project project = component.getProject();
+        JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
+        GlobalSearchScope scope = GlobalSearchScope.allScope(project);
+
+        PsiClass baseClass = facade.findClass(WO_ELEMENT_FQN, scope);
+        if (baseClass == null) {
+            return;
+        }
+
+        for (PsiClass clazz : ClassInheritorsSearch.search(baseClass, scope, true).asIterable()) {
+            String className = clazz.getName();
+            if (className == null) continue;
+
+            // 3. Add to completion lookup list
+            result.addElement(
+                    LookupElementBuilder.create(clazz, className)
+                            .withIcon(AllIcons.Nodes.Class)
+                            .withTypeText(clazz.getContainingFile().getName(), true)
+                            .bold()
+            );
+        }
     }
 
     protected void completeIdentifier4Binding(@NotNull WODBinding binding,

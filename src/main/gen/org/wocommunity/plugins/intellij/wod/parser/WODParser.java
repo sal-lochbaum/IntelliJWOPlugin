@@ -199,6 +199,18 @@ public class WODParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // CARET IDENTIFIER
+  public static boolean WODParentBinding(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "WODParentBinding")) return false;
+    if (!nextTokenIs(b, CARET)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokens(b, 0, CARET, IDENTIFIER);
+    exit_section_(b, m, WOD_PARENT_BINDING, r);
+    return r;
+  }
+
+  /* ********************************************************** */
   // STRING | WODParentBinding | WODKeyPath | NUMBER | BOOLEAN
   public static boolean WODValue(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "WODValue")) return false;
@@ -210,19 +222,6 @@ public class WODParser implements PsiParser, LightPsiParser {
     if (!r) r = consumeToken(b, NUMBER);
     if (!r) r = consumeToken(b, BOOLEAN);
     exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // CARET IDENTIFIER
-  public static boolean WODParentBinding(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "WODParentBinding")) return false;
-    if (!nextTokenIs(b, CARET)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeToken(b, CARET);
-    r = r && consumeToken(b, IDENTIFIER);
-    exit_section_(b, m, WOD_PARENT_BINDING, r);
     return r;
   }
 

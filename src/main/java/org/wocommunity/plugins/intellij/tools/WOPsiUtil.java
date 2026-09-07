@@ -28,7 +28,7 @@ import java.io.IOException;
 //       class of the component we are editing... argh
 
 public class WOPsiUtil {
-    private static final @NonNls @NotNull String WO_ELEMENT_FQN = "com.webobjects.appserver.WOElement";
+    public static final @NonNls @NotNull String WO_ELEMENT_FQN = "com.webobjects.appserver.WOElement";
 
     public static boolean itemIsComponentFolder(PsiFileSystemItem item) {
         return item instanceof PsiDirectory && WOFileUtil.COMPONENT_EXTENSION.equalsIgnoreCase(((PsiDirectory) item).getVirtualFile().getExtension());

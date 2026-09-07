@@ -1,56 +1,68 @@
+/**
+ * Adds WO icon to java members used in WO templates
+ */
 package org.wocommunity.plugins.intellij.java.linemarker;
 
-import com.intellij.codeInsight.daemon.LineMarkerInfo;
-import com.intellij.codeInsight.daemon.LineMarkerProvider;
+import com.intellij.codeInsight.daemon.RelatedItemLineMarkerInfo;
+import com.intellij.codeInsight.daemon.RelatedItemLineMarkerProvider;
 import com.intellij.codeInsight.navigation.NavigationGutterIconBuilder;
-import com.intellij.icons.AllIcons;
+import com.intellij.ide.util.DefaultPsiElementCellRenderer;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.openapi.fileTypes.FileTypeManager;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiIdentifier;
-import com.intellij.psi.PsiMethod;
+import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.ProjectScope;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.wocommunity.plugins.intellij.psi.references.WODComponentReference;
 import org.wocommunity.plugins.intellij.psi.references.WODKeyPathReference;
+import org.wocommunity.plugins.intellij.psi.wod.WODComponent;
 import org.wocommunity.plugins.intellij.tools.WOIcons;
 
 import java.util.Collection;
 import java.util.List;
 
-/**
- * Adds WO icon to java members used in WO templates
- */
-public class JavaLineMarkerProvider implements LineMarkerProvider {
+public class JavaLineMarkerProvider extends RelatedItemLineMarkerProvider {
+
     @Override
-    public @Nullable LineMarkerInfo<?> getLineMarkerInfo(@NotNull PsiElement element) {
-        if (!(element instanceof PsiIdentifier)) return null;
+    protected void collectNavigationMarkers(@NotNull PsiElement element,
+                                            @NotNull Collection<? super RelatedItemLineMarkerInfo<?>> result) {
+        if (!(element instanceof PsiIdentifier)) return;
 
         PsiElement parent = element.getParent();
+        if (parent instanceof PsiField || parent instanceof PsiMethod || parent instanceof PsiClass) {
 
-        if (parent instanceof PsiField || parent instanceof PsiMethod) {
             FileType wodFileType = FileTypeManager.getInstance().getFileTypeByExtension("wod");
             FileType htmlFileType = FileTypeManager.getInstance().getFileTypeByExtension("html");
-
 
             GlobalSearchScope projectScope = ProjectScope.getProjectScope(element.getProject());
             GlobalSearchScope typeScope = GlobalSearchScope.getScopeRestrictedByFileTypes(projectScope, wodFileType, htmlFileType);
 
-            Collection<?> references = ReferencesSearch.search(parent, typeScope).findAll();
+            // Verwende Query-Lazy-Iteration anstelle von .findAll() wo möglich
+            List<PsiElement> targets = ReferencesSearch.search(parent, typeScope).findAll().stream()
+                    .filter(ref -> ref instanceof WODKeyPathReference || ref instanceof WODComponentReference)
+                    .map(PsiReference::getElement)
+                    .toList();
 
-            if (!references.isEmpty()) {
-                return NavigationGutterIconBuilder.create(WOIcons.WOCOMPONENT_ICON)
-                        .setTargets(references.stream()
-                                .filter(ref -> ref instanceof WODKeyPathReference)
-                                .map(ref -> ((WODKeyPathReference) ref).getElement())
-                                .toList())
-                        .setTooltipText("Used in WO Component").createLineMarkerInfo(element);
+            if (!targets.isEmpty()) {
+                NavigationGutterIconBuilder<PsiElement> builder = NavigationGutterIconBuilder.create(WOIcons.WOCOMPONENT_ICON)
+                        .setTargets(targets)
+                        .setCellRenderer(new DefaultPsiElementCellRenderer() {
+                            @Override
+                            public String getElementText(PsiElement element) {
+                                PsiFile file = element.getContainingFile();
+                                return (file != null ? file.getName() : element.getText());
+                            }
+
+                            @Override
+                            public String getContainerText(PsiElement element, String name) {
+                                return null;
+                            }
+                        })
+                        .setTooltipText("Used in WO Component");
+
+                result.add(builder.createLineMarkerInfo(element));
             }
         }
-
-        return null;
     }
 }
