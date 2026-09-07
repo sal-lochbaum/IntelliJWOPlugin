@@ -8,6 +8,7 @@
     - The .api file lookup must be adjusted
     - (At least start with Nonlocalized.lproj, because that's where all wonder components are ;-) )
 - BUG Standalone .api files for template-less components are not recognized
+- FEAT Standalone .api files must not be hidden in the file tree
 
 ### Bindings / Definitions
 
@@ -35,7 +36,7 @@
 - BUG Formatting while typing is awkward ("{" should jump to new line and indent, after ";" at the end of a line the
   next
   line should have the same indent, etc.F)
-- command click on Component Names should jumpt to target component
+- command click on Component Names should jump to target component
 
 #### .html
 

@@ -14,10 +14,10 @@ public interface WODValue extends PsiElement {
   WODParentBinding getWODParentBinding();
 
   @Nullable
-  PsiElement getNumber();
+  PsiElement getBoolean();
 
   @Nullable
-  PsiElement getBoolean();
+  PsiElement getNumber();
 
   @Nullable
   PsiElement getString();

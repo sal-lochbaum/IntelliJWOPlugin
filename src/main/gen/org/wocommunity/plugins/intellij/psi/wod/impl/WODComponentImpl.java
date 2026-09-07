@@ -7,12 +7,11 @@ import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import static org.wocommunity.plugins.intellij.psi.wod.WODTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import org.wocommunity.plugins.intellij.psi.wod.*;
 
-public class WODComponentImpl extends ASTWrapperPsiElement implements WODComponent {
+public class WODComponentImpl extends WODComponentMixin implements WODComponent {
 
-  public WODComponentImpl(@NotNull ASTNode node) {
+  public WODComponentImpl(ASTNode node) {
     super(node);
   }
 

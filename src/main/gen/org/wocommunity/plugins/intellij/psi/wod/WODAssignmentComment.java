@@ -7,4 +7,7 @@ import com.intellij.psi.PsiElement;
 
 public interface WODAssignmentComment extends PsiElement {
 
+  @NotNull
+  PsiElement getAssignmentComment();
+
 }

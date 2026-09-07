@@ -23,9 +23,8 @@ public interface WODTypes {
   IElementType ASSIGN = new WODTokenType("=");
   IElementType ASSIGNMENT_COMMENT = new WODTokenType("ASSIGNMENT_COMMENT");
   IElementType BOOLEAN = new WODTokenType("BOOLEAN");
-  IElementType COLON = new WODTokenType(":");
   IElementType CARET = new WODTokenType("^");
-  IElementType COMMENT = new WODTokenType("COMMENT");
+  IElementType COLON = new WODTokenType(":");
   IElementType DOT = new WODTokenType(".");
   IElementType IDENTIFIER = new WODTokenType("IDENTIFIER");
   IElementType LBRACE = new WODTokenType("{");

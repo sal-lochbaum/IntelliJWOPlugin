@@ -131,16 +131,12 @@ final class WODAnnotator implements Annotator {
                 .textAttributes(TextAttributesKey.find("HTML_TAG_NAME"))
                 .create();
 
-        String className = component.getIdentifier().getText();
-        if (className.isEmpty()) {
-            return;
-        }
+        PsiReference[] references = component.getReferences();
 
-        try {
-            WOPsiUtil.getPsiClassForComponentName(className, component.getProject());
-        } catch (Exception e) {
-            if (e.getMessage() != null) {
-                holder.newAnnotation(HighlightSeverity.ERROR, e.getMessage())
+        for (PsiReference reference : references) {
+            PsiElement target = reference.resolve();
+            if (target == null) {
+                holder.newAnnotation(HighlightSeverity.ERROR, "e.getMessage()")
                         .range(component)
                         .create();
             }
