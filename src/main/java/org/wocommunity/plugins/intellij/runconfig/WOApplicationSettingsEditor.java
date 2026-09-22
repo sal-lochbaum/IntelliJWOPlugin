@@ -1,6 +1,5 @@
 package org.wocommunity.plugins.intellij.runconfig;
 
-import com.intellij.execution.ExecutionBundle;
 import com.intellij.execution.ui.*;
 import com.intellij.execution.application.ClassEditorField;
 import com.intellij.execution.application.JavaSettingsEditorBase;
@@ -31,8 +30,8 @@ public class WOApplicationSettingsEditor extends JavaSettingsEditorBase<WOApplic
                                       SettingsEditorFragment<WOApplicationConfiguration, ModuleClasspathCombo> moduleClasspath,
                                       CommonParameterFragments<WOApplicationConfiguration> commonParameterFragments) {
 //        fragments.add(SettingsEditorFragment.createTag("include.provided",
-//                ExecutionBundle.message("application.configuration.include.provided.scope"),
-//                ExecutionBundle.message("group.java.options"),
+//                "Include dependencies with \"Provided\" scope",
+//                "Java options",
 //                configuration -> configuration.getOptions().isIncludeProvidedScope(),
 //                (configuration, value) -> configuration.getOptions().setIncludeProvidedScope(value)));
         fragments.add(commonParameterFragments.programArguments());
@@ -87,16 +86,16 @@ public class WOApplicationSettingsEditor extends JavaSettingsEditorBase<WOApplic
         mainClass.setBackground(UIUtil.getTextFieldBackground());
         mainClass.setShowPlaceholderWhenFocused(true);
         CommonParameterFragments.setMonospaced(mainClass);
-        String placeholder = ExecutionBundle.message("application.configuration.main.class.placeholder");
+        String placeholder = "none";
         mainClass.setPlaceholder(placeholder);
         mainClass.getAccessibleContext().setAccessibleName(placeholder);
         setMinimumWidth(mainClass, 300);
         SettingsEditorFragment<WOApplicationConfiguration, EditorTextField> mainClassFragment =
-                new SettingsEditorFragment<>("mainClass", ExecutionBundle.message("application.configuration.main.class"), null, mainClass, 20,
+                new SettingsEditorFragment<>("mainClass", "Main class", null, mainClass, 20,
                         (configuration, component) -> component.setText(configuration.getMainClassName()),
                         (configuration, component) -> configuration.setMainClassName(component.getText()),
                         configuration -> true);
-        mainClassFragment.setHint(ExecutionBundle.message("application.configuration.main.class.hint"));
+        mainClassFragment.setHint("Specify the fully qualified name of the Application class");
         mainClassFragment.setRemovable(false);
         mainClassFragment.setEditorGetter(field -> {
             Editor editor = field.getEditor();
